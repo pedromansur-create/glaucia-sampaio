@@ -47,6 +47,7 @@ export type ShopifyProductLive = {
   sizes: string[];
   colors: string[];
   variants: ShopifyVariantLive[];
+  images: string[];
 };
 
 const SIZE_ALIASES: Record<string, string[]> = {

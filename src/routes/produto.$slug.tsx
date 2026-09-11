@@ -104,6 +104,12 @@ function ProductPage() {
     if (!live) return undefined;
     return matchShopifyVariant(live, size, selectedColorName);
   }, [live, size, selectedColorName]);
+  const shots = useMemo(() => {
+    const liveShots = live?.images?.filter(Boolean) ?? [];
+    const local = p?.images?.length ? p.images : [];
+    const merged = [...liveShots, ...local].filter((src, i, arr) => arr.indexOf(src) === i);
+    return merged.length ? merged : ["/looks/hero-portrait.jpg"];
+  }, [live, p]);
 
   if (!p) {
     return (
@@ -138,8 +144,6 @@ function ProductPage() {
   }
 
   const displayColor = color ?? p.colors[0];
-  const shots = p.images.length ? p.images : ["/looks/hero-portrait.jpg"];
-
   const addToBag = async () => {
     if (!size) return;
     if (live && !isSizeAvailable(live, size, selectedColorName)) return;
@@ -239,9 +243,11 @@ function ProductPage() {
                 e.stopPropagation();
                 setShot((n) => (n - 1 + shots.length) % shots.length);
               }}
-              className="absolute left-2 top-1/2 z-10 grid size-10 -translate-y-1/2 place-items-center text-[22px] leading-none text-ink/55"
+              className="absolute inset-y-0 left-0 z-10 flex w-14 items-center justify-center"
             >
-              ‹
+              <svg width="14" height="24" viewBox="0 0 14 24" fill="none" aria-hidden>
+                <path d="M13 1 2 12l11 11" stroke="currentColor" strokeWidth="1.4" />
+              </svg>
             </button>
             <button
               type="button"
@@ -250,9 +256,11 @@ function ProductPage() {
                 e.stopPropagation();
                 setShot((n) => (n + 1) % shots.length);
               }}
-              className="absolute right-2 top-1/2 z-10 grid size-10 -translate-y-1/2 place-items-center text-[22px] leading-none text-ink/55"
+              className="absolute inset-y-0 right-0 z-10 flex w-14 items-center justify-center"
             >
-              ›
+              <svg width="14" height="24" viewBox="0 0 14 24" fill="none" aria-hidden>
+                <path d="M1 1l11 11L1 23" stroke="currentColor" strokeWidth="1.4" />
+              </svg>
             </button>
           </>
         ) : null}

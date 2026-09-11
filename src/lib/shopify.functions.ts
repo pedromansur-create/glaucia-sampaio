@@ -59,6 +59,9 @@ function toLive(store: string, raw: RawProduct): ShopifyProductLive {
     sizes: sizeOption?.values ?? [...new Set(variants.map((v) => v.size).filter(Boolean))],
     colors: colorOption?.values ?? [...new Set(variants.map((v) => v.color).filter(Boolean))],
     variants,
+    images: (raw.images ?? [])
+      .map((img) => (typeof img === "string" ? img : img.src))
+      .filter(Boolean),
   };
 }
 
