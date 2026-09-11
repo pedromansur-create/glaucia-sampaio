@@ -17,7 +17,7 @@ function Trocas() {
   return (
     <article className="mx-auto max-w-2xl px-6 py-16 leading-relaxed md:px-10 md:py-24">
       <p className="text-[11px] tracking-[0.28em] text-subtle uppercase">A casa</p>
-      <h1 className="mt-3 font-display text-5xl md:text-7xl">Trocas e devoluções</h1>
+      <h1 className="mt-3 font-display text-5xl md:text-7xl">Política de trocas</h1>
       <p className="mt-8 text-muted">
         Comprar de casa é diferente de provar na loja. A lei brasileira cuida de você — e a boutique
         também. Sem letra miúda escondida.

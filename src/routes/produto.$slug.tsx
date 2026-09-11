@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { getProduct, whatsappUrl, FREE_SHIPPING_FROM, BOUTIQUE } from "@/lib/catalog";
 import { jsonLdScript, pageHead, productJsonLd } from "@/lib/seo";
@@ -266,7 +266,11 @@ function ProductPage() {
           {p.preorder ? `Pré-venda · envio ${p.preorder.shipsFrom}` : "Sai em 2 dias úteis"} · PIX
         </p>
         <p className="mt-1 text-center text-[9px] tracking-[0.1em] text-subtle">
-          {BOUTIQUE.cnpj} · 7 dias para desistir · Correios
+          {BOUTIQUE.cnpj} ·{" "}
+          <Link to="/trocas" className="underline">
+            7 dias para desistir
+          </Link>{" "}
+          · Correios
         </p>
         <a
           href={whatsappUrl(`Olá, quero a personal shopper para o ${p.name} (${p.brand}). Uso ${size || "—"}.`)}

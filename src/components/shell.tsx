@@ -159,7 +159,7 @@ function LegalBar() {
       <p className="mt-2 text-sm tracking-wide">{BOUTIQUE.legalName}</p>
       <p className="mt-1 text-sm text-muted">CNPJ {BOUTIQUE.cnpj}</p>
       <Link to="/trocas" className="mt-3 inline-block text-[10px] tracking-[0.18em] uppercase underline">
-        Trocas e devoluções
+        Política de trocas
       </Link>
     </div>
   );
@@ -370,7 +370,7 @@ function NavMenu() {
             Noite
           </Link>
           <Link to="/trocas" onClick={close}>
-            Trocas
+            Política de trocas
           </Link>
         </nav>
         <SizeMemory />
