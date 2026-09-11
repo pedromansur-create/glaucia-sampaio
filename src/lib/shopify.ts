@@ -116,14 +116,15 @@ function colorClose(a: string, b: string) {
 
 export function isSizeAvailable(live: ShopifyProductLive, size: string, color?: string) {
   const counted = sizeOnHand(live.handle, size, color);
-  if (counted != null) return counted > 0;
+  if (counted != null && counted > 0) return true;
   const keys = sizeKeys(size);
-  return live.variants.some(
+  const exists = live.variants.some(
     (v) =>
       keys.has(norm(v.size)) &&
-      v.available &&
       (!color || live.colors.length < 2 || colorClose(v.color, color)),
   );
+  if (exists) return counted == null || counted > 0 || live.variants.length > 0;
+  return false;
 }
 
 export function matchShopifyVariant(
