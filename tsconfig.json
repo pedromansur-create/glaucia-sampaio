@@ -10,6 +10,7 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "strict": true,
+    "skipLibCheck": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
     // `src/lib/db.ts` imports scripts/migration-plan.mjs; checkJs types the

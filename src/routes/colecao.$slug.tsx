@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { ProductCard } from "@/components/shell";
 import { catalogStamp, collections, productsForCollection, subscribeCatalog } from "@/lib/catalog";
 import { collectionJsonLd, jsonLdScript, pageHead } from "@/lib/seo";
@@ -22,13 +22,7 @@ function CollectionPage() {
   const { slug } = Route.useParams();
   const col = collections.find((c) => c.slug === slug);
   const list = productsForCollection(slug);
-  const [sort, setSort] = useState<"new" | "asc" | "desc">("new");
-  const sorted = useMemo(() => {
-    const arr = [...list];
-    if (sort === "asc") arr.sort((a, b) => a.price - b.price);
-    if (sort === "desc") arr.sort((a, b) => b.price - a.price);
-    return arr;
-  }, [list, sort]);
+  const sorted = list;
 
   return (
     <div className="px-1 pb-10 pt-2 md:px-2">

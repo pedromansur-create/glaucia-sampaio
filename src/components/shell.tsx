@@ -1,10 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   BOUTIQUE,
-  FREE_SHIPPING_FROM,
-  INSTAGRAM,
   WELCOME_CODE,
   getProduct,
   searchProducts,
@@ -98,54 +96,6 @@ function Header() {
         </div>
       </div>
     </header>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="mt-16 border-t border-line px-6 py-10 md:mt-24 md:px-12 md:py-16">
-      <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-3">
-        <div>
-          <p className="font-display text-3xl tracking-[0.12em]">GS</p>
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
-            Uma boutique de presença. Peças Fabulous Agilità, Agilità, Al Mare, LITT e Skazi —
-            escolhidas à mão em Uberlândia.
-          </p>
-        </div>
-        <div className="text-sm leading-7">
-          <p className="mb-3 text-[11px] tracking-[0.22em] text-subtle uppercase">A casa</p>
-          <Link to="/boutique" className="block hover:text-sardenha">
-            A boutique
-          </Link>
-          <Link to="/atelier" className="block hover:text-sardenha">
-            Atelier & personal shopper
-          </Link>
-          <Link to="/trocas" className="block hover:text-sardenha">
-            Trocas e devoluções
-          </Link>
-          <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="block hover:text-sardenha">
-            Instagram
-          </a>
-        </div>
-        <div className="text-sm leading-7 text-muted">
-          <p className="mb-3 text-[11px] tracking-[0.22em] text-subtle uppercase">Visite</p>
-          <p>{BOUTIQUE.address}</p>
-          <p>
-            {BOUTIQUE.city} · {BOUTIQUE.cep}
-          </p>
-          <p>{BOUTIQUE.hours}</p>
-          <p className="mt-3">{BOUTIQUE.phone}</p>
-          <p className="mt-6 text-xs">
-            <Link to="/trocas" className="underline">
-              7 dias para desistir da compra
-            </Link>
-            , com frete de volta por nossa conta. Frete grátis acima de {formatBRL(FREE_SHIPPING_FROM)}.
-            Cupom {WELCOME_CODE}: 10% na primeira compra, não válido em peças com desconto. Códigos
-            não acumulam.
-          </p>
-        </div>
-      </div>
-    </footer>
   );
 }
 
@@ -513,115 +463,12 @@ function SizeGuide() {
   );
 }
 
-function Newsletter() {
-  const unlock = useShop((s) => s.unlockWelcome);
-  const unlocked = useShop((s) => s.welcomeUnlocked);
-  const [show, setShow] = useState(false);
-  const [email, setEmail] = useState("");
-  const [done, setDone] = useState(false);
-
-  useEffect(() => {
-    if (unlocked) return;
-    const t = window.setTimeout(() => setShow(true), 14000);
-    return () => window.clearTimeout(t);
-  }, [unlocked]);
-
-  useEffect(() => {
-    if (!show || done) return;
-    const t = window.setTimeout(() => setShow(false), 20000);
-    return () => window.clearTimeout(t);
-  }, [show, done]);
-
-  if (!show || unlocked) return null;
-
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!email.includes("@")) return;
-    unlock();
-    setDone(true);
-    window.setTimeout(() => setShow(false), 1600);
-  };
-
-  return (
-    <aside className="fixed inset-0 z-50 grid place-items-end p-4 md:place-items-center">
-      <button type="button" aria-label="Agora não" onClick={() => setShow(false)} className="absolute inset-0 bg-ink/25" />
-      <form
-        onSubmit={onSubmit}
-        className="relative w-full max-w-md rounded-xl bg-paper p-8 shadow-2xl"
-      >
-        <button type="button" onClick={() => setShow(false)} className="absolute top-3 right-3 grid size-10 place-items-center" aria-label="Fechar">
-          <X size={16} />
-        </button>
-        <p className="text-[11px] tracking-[0.22em] text-subtle uppercase">A casa</p>
-        <h3 className="mt-2 font-display text-3xl">Dez por cento, uma vez.</h3>
-        <p className="mt-3 text-sm leading-relaxed text-muted">
-          Cadastre-se e use {WELCOME_CODE} na primeira compra. Não vale em peças com desconto.
-        </p>
-        {done ? (
-          <p className="mt-6 text-sm">Cupom {WELCOME_CODE} liberado.</p>
-        ) : (
-          <div className="mt-6 flex gap-2">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e-mail"
-              className="h-12 flex-1 rounded-md border border-line bg-bg px-3 text-sm outline-none"
-            />
-            <button type="submit" className="h-12 rounded-pill bg-ink px-5 text-xs tracking-widest text-paper uppercase">
-              Entrar
-            </button>
-          </div>
-        )}
-      </form>
-    </aside>
-  );
-}
-
-function Concierge() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  if (pathname.startsWith("/produto") || pathname.startsWith("/checkout")) return null;
-  return (
-    <a
-      href={whatsappUrl(
-        "Olá, Gláucia Sampaio. Dúvida de tamanho — quero falar com a personal shopper.",
-      )}
-      target="_blank"
-      rel="noreferrer"
-      data-cursor="on"
-      className="fixed right-4 bottom-6 z-40 grid size-12 place-items-center rounded-pill bg-ink text-[10px] tracking-[0.14em] text-paper uppercase shadow-lg md:right-8 md:bottom-8 md:w-auto md:px-4"
-    >
-      <span className="hidden md:inline">WhatsApp</span>
-      <span className="md:hidden">WA</span>
-    </a>
-  );
-}
-
-function Cursor() {
-  useEffect(() => {
-    const el = document.getElementById("gs-cursor");
-    if (!el) return;
-    const move = (e: MouseEvent) => {
-      el.style.left = `${e.clientX}px`;
-      el.style.top = `${e.clientY}px`;
-      const on = (e.target as HTMLElement | null)?.closest("[data-cursor='on']");
-      el.classList.toggle("on", Boolean(on));
-    };
-    window.addEventListener("mousemove", move);
-    return () => window.removeEventListener("mousemove", move);
-  }, []);
-  return <div id="gs-cursor" className="gs-cursor" />;
-}
-
 export function ProductCard({
   slug,
   product,
-  large,
 }: {
   slug: string;
   product?: ReturnType<typeof getProduct>;
-  large?: boolean;
 }) {
   const p = product ?? getProduct(slug);
   const zoom = useShop((s) => s.zoom);

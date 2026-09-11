@@ -1,4 +1,4 @@
-import { BOUTIQUE, INSTAGRAM, collections, occasions, type Product } from "./catalog";
+import { BOUTIQUE, INSTAGRAM, type Product } from "./catalog";
 
 export const SITE_URL = "https://www.glauciasampaio.com";
 export const SITE_NAME = "Gláucia Sampaio";

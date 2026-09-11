@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Layers, Share, ShoppingBag, Sparkles, UserRound } from "lucide-react";
+import { Home, Layers, ShoppingBag, Sparkles, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
 import { shopifyCartUrl, shopifyReadyCount } from "@/lib/shopify";

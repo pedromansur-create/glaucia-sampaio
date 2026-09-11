@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { catalogStamp, getProduct, whatsappUrl, FREE_SHIPPING_FROM, BOUTIQUE, subscribeCatalog } from "@/lib/catalog";
+import { getProduct, whatsappUrl, FREE_SHIPPING_FROM, subscribeCatalog, catalogStamp } from "@/lib/catalog";
 import { jsonLdScript, pageHead, productJsonLd } from "@/lib/seo";
 import { formatBRL } from "@/lib/format";
 import {
@@ -38,6 +38,13 @@ function ProductPage() {
   useSyncExternalStore(subscribeCatalog, catalogStamp, catalogStamp);
   const { slug } = Route.useParams();
   const navigate = useNavigate();
+  const close = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    void navigate({ to: "/" });
+  };
   const p = getProduct(slug);
   const add = useShop((s) => s.add);
   const setCartOpen = useShop((s) => s.setCartOpen);
@@ -75,7 +82,7 @@ function ProductPage() {
     return () => {
       cancelled = true;
     };
-  }, [p, handle, store]);
+  }, [p, handle, store, herSize]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -163,14 +170,6 @@ function ProductPage() {
     } finally {
       setBusy(false);
     }
-  };
-
-  const close = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      window.history.back();
-      return;
-    }
-    navigate({ to: "/" });
   };
 
   return (
@@ -304,7 +303,11 @@ function ProductPage() {
 
         <button
           type="button"
-          disabled={busy || !size || Boolean(live && !isSizeAvailable(live, size, selectedColorName)) || (live && !live.available)}
+          disabled={
+            busy ||
+            !size ||
+            Boolean(live && (!isSizeAvailable(live, size, selectedColorName) || !live.available))
+          }
           onClick={() => void addToBag()}
           className="mt-1 flex h-11 w-full items-center justify-center text-[11px] tracking-[0.4em] text-ink uppercase disabled:text-muted"
         >

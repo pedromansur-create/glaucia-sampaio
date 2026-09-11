@@ -3,7 +3,7 @@ import raw from "../data/inventory.json";
 type Line = { size: string; color: string; qty: number };
 type Entry = { handle: string; onHand: number; sizes: Record<string, number>; lines: Line[] };
 
-const byHandle = new Map((raw.products as Entry[]).map((p) => [p.handle, p]));
+const byHandle = new Map((raw.products as unknown as Entry[]).map((p) => [p.handle, p]));
 
 export function inventoryFor(handle?: string | null) {
   if (!handle) return null;
