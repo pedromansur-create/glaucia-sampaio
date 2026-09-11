@@ -4,6 +4,7 @@ import { getProduct, whatsappUrl, FREE_SHIPPING_FROM, BOUTIQUE } from "@/lib/cat
 import { jsonLdScript, pageHead, productJsonLd } from "@/lib/seo";
 import { formatBRL } from "@/lib/format";
 import {
+  isSizeAvailable,
   matchShopifyVariant,
   shopifyHandleFor,
   type ShopifyProductLive,
@@ -51,7 +52,7 @@ function ProductPage() {
   const [busy, setBusy] = useState(false);
   const [info, setInfo] = useState(false);
   const [live, setLive] = useState<ShopifyProductLive | null>(null);
-  const handle = p ? shopifyHandleFor(p.slug) : undefined;
+  const handle = p ? p.shopifyHandle || shopifyHandleFor(p.slug) : undefined;
   const count = cart.reduce((a, i) => a + i.qty, 0);
 
   useEffect(() => {
@@ -109,6 +110,7 @@ function ProductPage() {
 
   const addToBag = async () => {
     if (!size) return;
+    if (live && !isSizeAvailable(live, size, selectedColorName)) return;
     setBusy(true);
     try {
       let variantId = matched?.id;
@@ -219,14 +221,7 @@ function ProductPage() {
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] tracking-[0.2em]">
           {liveSizes.map((s) => {
-            const available =
-              !live ||
-              live.variants.some(
-                (v) =>
-                  v.size === s &&
-                  v.available &&
-                  (!selectedColorName || v.color === selectedColorName || live.colors.length < 2),
-              );
+            const available = !live || isSizeAvailable(live, s, selectedColorName);
             return (
               <button
                 key={s}
@@ -250,11 +245,17 @@ function ProductPage() {
 
         <button
           type="button"
-          disabled={busy || !size}
+          disabled={busy || !size || Boolean(live && !isSizeAvailable(live, size, selectedColorName)) || (live && !live.available)}
           onClick={() => void addToBag()}
           className="mt-3 flex h-11 w-full items-center justify-center text-[11px] tracking-[0.4em] uppercase disabled:opacity-25"
         >
-          {busy ? "…" : added ? "ADDED" : "ADD"}
+          {busy
+            ? "…"
+            : added
+              ? "ADDED"
+              : live && !live.available
+                ? "ESGOTADO"
+                : "ADD"}
         </button>
         <p className="mt-2 text-center text-[10px] tracking-[0.12em] text-muted uppercase">
           {p.preorder ? `Pré-venda · envio ${p.preorder.shipsFrom}` : "Sai em 2 dias úteis"} · PIX

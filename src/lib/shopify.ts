@@ -62,7 +62,7 @@ const SIZE_ALIASES: Record<string, string[]> = {
 };
 
 export function shopifyHandleFor(slug: string) {
-  return SHOPIFY_HANDLES[slug];
+  return SHOPIFY_HANDLES[slug] ?? slug;
 }
 
 export function normalizeStoreHost(input: string) {
@@ -109,6 +109,16 @@ function colorClose(a: string, b: string) {
     ["degrade", "pink"],
   ];
   return pairs.some(([p, q]) => (x.includes(p) && y.includes(q)) || (x.includes(q) && y.includes(p)));
+}
+
+export function isSizeAvailable(live: ShopifyProductLive, size: string, color?: string) {
+  const keys = sizeKeys(size);
+  return live.variants.some(
+    (v) =>
+      keys.has(norm(v.size)) &&
+      v.available &&
+      (!color || live.colors.length < 2 || colorClose(v.color, color)),
+  );
 }
 
 export function matchShopifyVariant(
