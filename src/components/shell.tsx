@@ -184,7 +184,7 @@ function CartDrawer() {
     <aside
       className={cn(
         "fixed inset-0 z-50 transition-[visibility] duration-300",
-        open ? "visible" : "invisible",
+        open ? "visible pointer-events-auto" : "invisible pointer-events-none",
       )}
     >
       <button
@@ -332,7 +332,7 @@ function NavMenu() {
   const setOpen = useShop((s) => s.setMenuOpen);
   const close = () => setOpen(false);
   return (
-    <aside className={cn("fixed inset-0 z-50", open ? "visible" : "invisible")}>
+    <aside className={cn("fixed inset-0 z-50", open ? "visible pointer-events-auto" : "invisible pointer-events-none")}>
       <button
         type="button"
         aria-label="Fechar menu"
@@ -400,7 +400,7 @@ function SearchPanel() {
   const [q, setQ] = useState("");
   const results = searchProducts(q).slice(0, 8);
   return (
-    <aside className={cn("fixed inset-0 z-50", open ? "visible" : "invisible")}>
+    <aside className={cn("fixed inset-0 z-50", open ? "visible pointer-events-auto" : "invisible pointer-events-none")}>
       <button
         type="button"
         aria-label="Fechar busca"
@@ -627,13 +627,13 @@ export function ProductCard({
   const zoom = useShop((s) => s.zoom);
   if (!p) return null;
   return (
-    <article className="group relative">
-      <Link to="/produto/$slug" params={{ slug: p.slug }} className="block">
+    <article className="group relative z-10">
+      <Link to="/produto/$slug" params={{ slug: p.slug }} className="block cursor-pointer" preload="intent">
         <div className="aspect-[3/4] overflow-hidden bg-white">
           <img
             src={p.images[0]}
             alt={`${p.brand} ${p.name}`}
-            className="h-full w-full object-cover object-top transition-transform duration-300"
+            className="pointer-events-none h-full w-full object-cover object-top transition-transform duration-300"
             style={{ transform: `scale(${zoom})` }}
           />
         </div>
