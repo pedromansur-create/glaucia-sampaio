@@ -4,11 +4,13 @@ import { formatBRL } from "@/lib/format";
 import { maisonAdvise } from "@/lib/maison-ai";
 import { pageHead } from "@/lib/seo";
 
+const CAIXA_RCS = "https://www.caixarcs.com";
+
 export const Route = createFileRoute("/casa")({
   head: () =>
     pageHead({
       title: "Casa",
-      description: "Copiloto da casa. Uso interno.",
+      description: "Copiloto da vitrine. O caderno é o CaixaRCS.",
       path: "/casa",
       noindex: true,
     }),
@@ -23,11 +25,16 @@ function Casa() {
     <article className="mx-auto max-w-xl px-6 py-16 text-[14px] leading-[1.85]">
       <h1 className="text-[11px] tracking-[0.32em] text-subtle uppercase">Casa</h1>
       <p className="mt-6 text-muted">
-        Copiloto. Lê só o catálogo da loja. A ficha da cliente fica no CRM que você já usa — aqui
-        a casa escolhe a peça e o recado.
+        Ficha, caixa, PDV e quem não veio — isso é o CaixaRCS. Aqui a vitrine só escolhe a
+        peça no catálogo vivo e o recado. Sem caderno paralelo.
+      </p>
+      <p className="mt-8">
+        <a href={CAIXA_RCS} target="_blank" rel="noreferrer" className="text-[11px] tracking-[0.22em] uppercase">
+          Abrir CaixaRCS
+        </a>
       </p>
 
-      <label className="mt-12 block text-[11px] tracking-[0.22em] uppercase">Pedir à casa</label>
+      <label className="mt-14 block text-[11px] tracking-[0.22em] uppercase">Pedir à vitrine</label>
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
@@ -60,6 +67,9 @@ function Casa() {
             </button>
             <a href={advice.whatsapp} target="_blank" rel="noreferrer">
               WhatsApp
+            </a>
+            <a href={CAIXA_RCS} target="_blank" rel="noreferrer">
+              Lançar no CaixaRCS
             </a>
           </p>
         </>
