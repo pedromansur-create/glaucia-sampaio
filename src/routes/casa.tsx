@@ -161,6 +161,36 @@ function Casa() {
             <button type="button" onClick={() => void navigator.clipboard.writeText(draft || advice.draft)}>
               Copiar recado
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                const payload = {
+                  kind: "anuncio",
+                  query: advice.query,
+                  name: client?.name ?? "",
+                  size: advice.size,
+                  occasion: advice.occasion,
+                  picks: advice.picks.map((x) => ({
+                    brand: x.product.brand,
+                    name: x.product.shortName,
+                    price: x.product.price,
+                    composition: x.product.composition || x.product.fabric,
+                  })),
+                };
+                fetch("/api/maison", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                })
+                  .then((r) => r.json())
+                  .then((d: { ok?: boolean; draft?: string }) => {
+                    if (d.ok && d.draft) setDraft(d.draft);
+                  })
+                  .catch(() => {});
+              }}
+            >
+              Google · Instagram · Facebook
+            </button>
             <a href={whatsappUrl(draft || advice.draft)} target="_blank" rel="noreferrer">
               WhatsApp
             </a>

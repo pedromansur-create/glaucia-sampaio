@@ -21,7 +21,8 @@ export default defineEventHandler(async (event) => {
     return { ok: false, local: false };
   }
   const body = await readBody(event);
-  const r = await fetch(`${url.replace(/\/$/, "")}/recado`, {
+  const kind = body?.kind === "anuncio" ? "anuncio" : "recado";
+  const r = await fetch(`${url.replace(/\/$/, "")}/${kind}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body ?? {}),

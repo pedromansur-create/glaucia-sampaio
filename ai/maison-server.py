@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local maison brain. Retrieval stays on the website; this only writes the recado."""
+"""Local maison brain. Retrieval stays on the website; this only writes copy."""
 from __future__ import annotations
 
 import json
@@ -22,6 +22,25 @@ Regras:
 - No máximo 8 linhas.
 - Feche oferecendo reserva do tamanho ou prova na Rua Rodolfo Correa, 385."""
 
+ADS_SYSTEM = """Você é a voz da boutique Gláucia Sampaio para anúncio.
+Português do Brasil. Luxo quieto. Sem gritaria, sem emoji, sem a palavra IA, sem “imperdível”.
+Nunca invente peça, preço ou estoque — só o JSON.
+Formato de resposta, exatamente:
+
+GOOGLE_TITULOS
+- (máx 30 caracteres cada, 8 linhas)
+
+GOOGLE_TEXTOS
+- (máx 90 caracteres cada, 4 linhas)
+
+INSTAGRAM
+(legenda, 5–8 linhas, no máximo 3 hashtags no fim)
+
+FACEBOOK
+(texto principal, 4–6 linhas, convite a WhatsApp ou à Rua Rodolfo Correa)
+
+Não escreva mais nada fora desses blocos."""
+
 
 def ollama_json(path: str, payload: dict | None = None, timeout: int = 60) -> dict:
     data = None if payload is None else json.dumps(payload).encode("utf-8")
@@ -35,7 +54,7 @@ def ollama_json(path: str, payload: dict | None = None, timeout: int = 60) -> di
         return json.loads(r.read().decode("utf-8"))
 
 
-def generate(prompt: str) -> str:
+def chat(system: str, prompt: str) -> str:
     data = ollama_json(
         "/api/chat",
         {
@@ -43,7 +62,7 @@ def generate(prompt: str) -> str:
             "stream": False,
             "options": {"temperature": 0.3, "num_ctx": 2048},
             "messages": [
-                {"role": "system", "content": SYSTEM},
+                {"role": "system", "content": system},
                 {"role": "user", "content": prompt},
             ],
         },
@@ -52,12 +71,27 @@ def generate(prompt: str) -> str:
     return str((data.get("message") or {}).get("content") or "").strip()
 
 
+def catalog_prompt(body: dict, extra: str) -> str:
+    picks = (body.get("picks") or [])[:4]
+    return "\n".join(
+        [
+            f"Pedido: {body.get('query') or '—'}",
+            f"Cliente: {body.get('name') or '—'}",
+            f"Tamanho: {body.get('size') or '—'}",
+            f"Ocasião: {body.get('occasion') or 'casamento / madrinha / all white'}",
+            "Peças (únicas permitidas):",
+            json.dumps(picks, ensure_ascii=False, indent=2),
+            extra,
+        ]
+    )
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt: str, *args) -> None:
         print(fmt % args)
 
     def _send(self, code: int, body: dict) -> None:
-        raw = json.dumps(body).encode("utf-8")
+        raw = json.dumps(body, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -65,7 +99,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
         self.send_header("Content-Length", str(len(raw)))
         self.end_headers()
-        self.wfile.write(raw)
+        if code != 204:
+            self.wfile.write(raw)
 
     def do_OPTIONS(self) -> None:
         self._send(204, {})
@@ -82,34 +117,28 @@ class Handler(BaseHTTPRequestHandler):
             self._send(503, {"ok": False, "error": "ollama offline"})
 
     def do_POST(self) -> None:
-        if self.path != "/recado":
-            self._send(404, {"ok": False})
-            return
         n = int(self.headers.get("Content-Length") or 0)
         try:
             body = json.loads(self.rfile.read(n) or b"{}")
         except json.JSONDecodeError:
             self._send(400, {"ok": False, "error": "json"})
             return
-        picks = (body.get("picks") or [])[:4]
-        prompt = "\n".join(
-            [
-                f"Pedido: {body.get('query') or '—'}",
-                f"Cliente: {body.get('name') or '—'}",
-                f"Tamanho: {body.get('size') or '—'}",
-                f"Ocasião: {body.get('occasion') or '—'}",
-                "Peças (únicas permitidas):",
-                json.dumps(picks, ensure_ascii=False, indent=2),
-                "Escreva o recado agora.",
-            ]
-        )
         try:
-            draft = generate(prompt)
-            self._send(200, {"ok": True, "draft": draft, "model": MODEL})
+            if self.path == "/recado":
+                draft = chat(SYSTEM, catalog_prompt(body, "Escreva o recado agora."))
+                self._send(200, {"ok": True, "draft": draft, "model": MODEL})
+                return
+            if self.path == "/anuncio":
+                copy = chat(ADS_SYSTEM, catalog_prompt(body, "Escreva os anúncios agora."))
+                self._send(200, {"ok": True, "draft": copy, "model": MODEL})
+                return
         except urllib.error.HTTPError as e:
             self._send(502, {"ok": False, "error": f"ollama {e.code}"})
+            return
         except Exception as e:
             self._send(502, {"ok": False, "error": str(e)})
+            return
+        self._send(404, {"ok": False})
 
 
 if __name__ == "__main__":
