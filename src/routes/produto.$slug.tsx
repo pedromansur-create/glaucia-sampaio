@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { getProduct, whatsappUrl, FREE_SHIPPING_FROM, subscribeCatalog, catalogStamp } from "@/lib/catalog";
 import { jsonLdScript, pageHead, productJsonLd } from "@/lib/seo";
 import { formatBRL } from "@/lib/format";
@@ -85,6 +85,14 @@ function ProductPage() {
   }, [p, handle, store, herSize]);
 
   useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") navigate({ to: "/colecao/$slug", params: { slug: "novidades" } });
       if (e.key === "ArrowRight" && p) setShot((n) => (n + 1) % Math.max(p.images.length, 1));
@@ -118,7 +126,7 @@ function ProductPage() {
           <button
             type="button"
             onClick={close}
-            className="relative z-10 grid size-11 place-items-center text-lg"
+            className="relative z-10 grid size-11 place-items-center text-lg touch-manipulation"
             aria-label="Fechar"
           >
             ×
@@ -176,8 +184,20 @@ function ProductPage() {
     }
   };
 
+  const touchX = useRef<number | null>(null);
+  const onSwipeStart = (e: React.TouchEvent) => {
+    touchX.current = e.changedTouches[0].clientX;
+  };
+  const onSwipeEnd = (e: React.TouchEvent) => {
+    if (touchX.current == null || shots.length < 2) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    touchX.current = null;
+    if (Math.abs(dx) < 40) return;
+    setShot((n) => (dx > 0 ? (n - 1 + shots.length) % shots.length : (n + 1) % shots.length));
+  };
+
   return (
-    <div className="fixed inset-0 z-[80] flex h-dvh flex-col overflow-hidden bg-white">
+    <div className="fixed inset-0 z-[80] flex h-[100svh] max-h-dvh flex-col overflow-hidden overscroll-none bg-white">
       <h1 className="sr-only">
         {p.brand} {p.name}
       </h1>
@@ -189,7 +209,7 @@ function ProductPage() {
             e.stopPropagation();
             close();
           }}
-          className="relative z-10 grid size-11 place-items-center text-lg"
+          className="relative z-10 grid size-11 place-items-center text-lg touch-manipulation"
           aria-label="Fechar"
         >
           ×
@@ -201,7 +221,7 @@ function ProductPage() {
               e.stopPropagation();
               cycleZoom();
             }}
-            className="relative z-10 grid size-11 place-items-center text-lg"
+            className="relative z-10 grid size-11 place-items-center text-lg touch-manipulation"
             aria-label="Zoom"
           >
             +
@@ -212,7 +232,7 @@ function ProductPage() {
               e.stopPropagation();
               setCartOpen(true);
             }}
-            className="relative z-10 flex h-11 items-center px-1 text-[10px] tracking-[0.22em] uppercase"
+            className="relative z-10 flex h-11 items-center px-1 text-[10px] tracking-[0.22em] uppercase touch-manipulation"
             aria-label="Sacola"
           >
             BAG{count ? ` ${count}` : ""}
@@ -220,17 +240,22 @@ function ProductPage() {
         </div>
       </div>
 
-      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+      <div
+        className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden touch-pan-y"
+        onTouchStart={onSwipeStart}
+        onTouchEnd={onSwipeEnd}
+      >
         <button
           type="button"
-          className="flex h-full w-full items-center justify-center"
+          className="flex h-full w-full items-center justify-center touch-manipulation"
           onClick={() => setShot((n) => (n + 1) % shots.length)}
           aria-label="Próxima foto"
         >
           <img
             src={shots[shot]}
             alt={p.name}
-            className="max-h-full max-w-[min(92vw,720px)] object-contain transition-transform duration-300"
+            draggable={false}
+            className="max-h-full max-w-[min(92vw,720px)] select-none object-contain transition-transform duration-300"
             style={{ transform: `scale(${zoom})` }}
           />
         </button>
@@ -243,10 +268,10 @@ function ProductPage() {
                 e.stopPropagation();
                 setShot((n) => (n - 1 + shots.length) % shots.length);
               }}
-              className="absolute inset-y-0 left-0 z-10 flex w-14 items-center justify-center"
+              className="absolute top-1/2 left-0 z-10 flex h-28 w-12 -translate-y-1/2 items-center justify-center touch-manipulation"
             >
-              <svg width="14" height="24" viewBox="0 0 14 24" fill="none" aria-hidden>
-                <path d="M13 1 2 12l11 11" stroke="currentColor" strokeWidth="1.4" />
+              <svg width="12" height="22" viewBox="0 0 12 22" fill="none" aria-hidden>
+                <path d="M11 1 1 11l10 10" stroke="currentColor" strokeWidth="1.25" />
               </svg>
             </button>
             <button
@@ -256,10 +281,10 @@ function ProductPage() {
                 e.stopPropagation();
                 setShot((n) => (n + 1) % shots.length);
               }}
-              className="absolute inset-y-0 right-0 z-10 flex w-14 items-center justify-center"
+              className="absolute top-1/2 right-0 z-10 flex h-28 w-12 -translate-y-1/2 items-center justify-center touch-manipulation"
             >
-              <svg width="14" height="24" viewBox="0 0 14 24" fill="none" aria-hidden>
-                <path d="M1 1l11 11L1 23" stroke="currentColor" strokeWidth="1.4" />
+              <svg width="12" height="22" viewBox="0 0 12 22" fill="none" aria-hidden>
+                <path d="M1 1l10 10L1 21" stroke="currentColor" strokeWidth="1.25" />
               </svg>
             </button>
           </>
@@ -347,7 +372,7 @@ function ProductPage() {
             Boolean(live && (!isSizeAvailable(live, size, selectedColorName) || !live.available))
           }
           onClick={() => void addToBag()}
-          className="mt-1 flex h-11 w-full items-center justify-center text-[11px] tracking-[0.4em] text-ink uppercase disabled:text-muted"
+          className="mt-1 flex h-11 w-full items-center justify-center text-[11px] tracking-[0.4em] text-ink uppercase touch-manipulation disabled:text-muted"
         >
           {busy
             ? "…"
