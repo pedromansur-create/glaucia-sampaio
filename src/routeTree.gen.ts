@@ -19,6 +19,7 @@ import { Route as ColecaoRouteImport } from './routes/colecao'
 import { Route as LookbookRouteImport } from './routes/lookbook'
 import { Route as OcasioesRouteImport } from './routes/ocasioes'
 import { Route as ShopifyRouteImport } from './routes/shopify'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as TrocasRouteImport } from './routes/trocas'
 import { Route as ColecaoSlugRouteImport } from './routes/colecao.$slug'
 import { Route as OcasioesSlugRouteImport } from './routes/ocasioes.$slug'
@@ -74,6 +75,11 @@ const ShopifyRoute = ShopifyRouteImport.update({
   path: '/shopify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TrocasRoute = TrocasRouteImport.update({
   id: '/trocas',
   path: '/trocas',
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/lookbook': typeof LookbookRoute
   '/ocasioes': typeof OcasioesRouteWithChildren
   '/shopify': typeof ShopifyRoute
+  '/status': typeof StatusRoute
   '/trocas': typeof TrocasRoute
   '/colecao/$slug': typeof ColecaoSlugRoute
   '/ocasioes/$slug': typeof OcasioesSlugRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/lookbook': typeof LookbookRoute
   '/ocasioes': typeof OcasioesRouteWithChildren
   '/shopify': typeof ShopifyRoute
+  '/status': typeof StatusRoute
   '/trocas': typeof TrocasRoute
   '/colecao/$slug': typeof ColecaoSlugRoute
   '/ocasioes/$slug': typeof OcasioesSlugRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/lookbook': typeof LookbookRoute
   '/ocasioes': typeof OcasioesRouteWithChildren
   '/shopify': typeof ShopifyRoute
+  '/status': typeof StatusRoute
   '/trocas': typeof TrocasRoute
   '/colecao/$slug': typeof ColecaoSlugRoute
   '/ocasioes/$slug': typeof OcasioesSlugRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/lookbook'
     | '/ocasioes'
     | '/shopify'
+    | '/status'
     | '/trocas'
     | '/colecao/$slug'
     | '/ocasioes/$slug'
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/lookbook'
     | '/ocasioes'
     | '/shopify'
+    | '/status'
     | '/trocas'
     | '/colecao/$slug'
     | '/ocasioes/$slug'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/lookbook'
     | '/ocasioes'
     | '/shopify'
+    | '/status'
     | '/trocas'
     | '/colecao/$slug'
     | '/ocasioes/$slug'
@@ -206,6 +218,7 @@ export interface RootRouteChildren {
   LookbookRoute: typeof LookbookRoute
   OcasioesRoute: typeof OcasioesRouteWithChildren
   ShopifyRoute: typeof ShopifyRoute
+  StatusRoute: typeof StatusRoute
   TrocasRoute: typeof TrocasRoute
   ProdutoSlugRoute: typeof ProdutoSlugRoute
 }
@@ -282,6 +295,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/trocas': {
       id: '/trocas'
       path: '/trocas'
@@ -347,6 +367,7 @@ const rootRouteChildren: RootRouteChildren = {
   LookbookRoute: LookbookRoute,
   OcasioesRoute: OcasioesRouteWithChildren,
   ShopifyRoute: ShopifyRoute,
+  StatusRoute: StatusRoute,
   TrocasRoute: TrocasRoute,
   ProdutoSlugRoute: ProdutoSlugRoute,
 }

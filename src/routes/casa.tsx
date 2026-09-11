@@ -122,6 +122,9 @@ function Casa() {
         <a href={CAIXA_RCS} target="_blank" rel="noreferrer">
           CaixaRCS
         </a>
+        <Link to="/status" className="uppercase">
+          Status
+        </Link>
       </p>
       {crm === "none" ? (
         <p className="mt-6 text-muted">
