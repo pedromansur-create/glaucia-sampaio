@@ -243,7 +243,9 @@ function ProductPage() {
           >
             {p.shortName} ?
           </button>
-          <span className="shrink-0 tabular-nums">{formatBRL(matched?.price ?? p.price)}</span>
+          <span className="shrink-0 text-[13px] tracking-[0.08em] tabular-nums">
+            {formatBRL(matched?.price ?? p.price)}
+          </span>
         </div>
         {info ? (
           <p className="mt-1 text-[10px] leading-snug tracking-[0.04em] text-muted">
