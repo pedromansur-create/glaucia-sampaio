@@ -246,7 +246,7 @@ function ProductPage() {
                   setSize(s);
                   rememberSize(s);
                 }}
-                className={`grid h-11 min-w-8 place-items-center uppercase ${s === size ? "underline" : "opacity-30"} ${!available ? "line-through" : ""} disabled:opacity-20`}
+                className={`grid h-11 min-w-8 place-items-center uppercase ${s === size ? "underline" : "text-muted"} ${!available ? "line-through" : ""} disabled:text-subtle`}
               >
                 {s}
               </button>
@@ -255,7 +255,7 @@ function ProductPage() {
           <button
             type="button"
             onClick={() => setSizeOpen(true)}
-            className="grid h-11 w-11 place-items-center text-[10px] tracking-[0.18em] text-subtle"
+            className="grid h-11 w-11 place-items-center text-[10px] tracking-[0.18em] text-muted"
             aria-label="Guia de medidas"
           >
             ?
@@ -266,7 +266,7 @@ function ProductPage() {
           type="button"
           disabled={busy || !size || Boolean(live && !isSizeAvailable(live, size, selectedColorName)) || (live && !live.available)}
           onClick={() => void addToBag()}
-          className="mt-1 flex h-11 w-full items-center justify-center text-[11px] tracking-[0.4em] uppercase disabled:opacity-25"
+          className="mt-1 flex h-11 w-full items-center justify-center text-[11px] tracking-[0.4em] text-ink uppercase disabled:text-muted"
         >
           {busy
             ? "…"
@@ -276,7 +276,7 @@ function ProductPage() {
                 ? "ESGOTADO"
                 : "ADD"}
         </button>
-        <p className="mt-1 text-center text-[9px] tracking-[0.12em] text-subtle uppercase">
+        <p className="mt-1 text-center text-[9px] tracking-[0.12em] text-muted uppercase">
           {p.preorder ? `Pré-venda ${p.preorder.shipsFrom}` : "2 dias úteis"} · PIX ·{" "}
           <Link to="/trocas" className="underline">
             7 dias
