@@ -209,10 +209,10 @@ function ProductPage() {
               e.stopPropagation();
               setCartOpen(true);
             }}
-            className="relative z-10 grid size-11 place-items-center text-xs tracking-widest"
+            className="relative z-10 flex h-11 items-center px-1 text-[10px] tracking-[0.22em] uppercase"
             aria-label="Sacola"
           >
-            {count || ""}
+            BAG{count ? ` ${count}` : ""}
           </button>
         </div>
       </div>
@@ -234,8 +234,8 @@ function ProductPage() {
       <div className="shrink-0 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
         <p className="text-[10px] tracking-[0.22em] uppercase">{p.brand}</p>
         <div className="mt-0.5 flex items-baseline justify-between gap-3 text-[11px] tracking-[0.14em] uppercase">
-          <button type="button" onClick={() => setInfo((v) => !v)} className="truncate text-left">
-            {p.shortName} {info ? "–" : "?"}
+          <button type="button" onClick={() => setSizeOpen(true)} className="truncate text-left">
+            {p.shortName} ?
           </button>
           <span className="shrink-0 tabular-nums">{formatBRL(matched?.price ?? p.price)}</span>
         </div>

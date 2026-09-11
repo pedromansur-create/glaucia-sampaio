@@ -444,7 +444,7 @@ function SizeGuide() {
   ];
   if (!open) return null;
   return (
-    <aside className="fixed inset-0 z-[70] grid place-items-center p-4">
+    <aside className="fixed inset-0 z-[100] grid place-items-center p-4">
       <button
         type="button"
         aria-label="Fechar guia"
