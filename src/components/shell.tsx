@@ -667,9 +667,18 @@ export function ProductCard({
   const p = product ?? getProduct(slug);
   const zoom = useShop((s) => s.zoom);
   if (!p) return null;
+  const href = `/produto/${p.slug}`;
   return (
-    <article className="relative z-10">
-      <a href={`/produto/${p.slug}`} className="block cursor-pointer">
+    <article className="relative z-20">
+      <a
+        href={href}
+        className="block cursor-pointer touch-manipulation"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          window.location.assign(href);
+        }}
+      >
         <div className="aspect-[3/4] overflow-hidden bg-white">
           <img
             src={p.images[0]}
