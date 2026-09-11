@@ -1,5 +1,6 @@
 import seed from "../data/shopify-catalog.json";
 import compositionMap from "../data/composition.json";
+import { sizeOnHand } from "./inventory";
 
 export type Size = "PP" | "P" | "M" | "G" | "GG";
 
@@ -837,12 +838,39 @@ export function productsForCollection(slug: string) {
   return list.length ? list : pool;
 }
 
-export function searchProducts(q: string) {
-  const n = q.trim().toLowerCase();
-  if (!n) return allProducts();
-  return allProducts().filter((p) =>
-    [p.name, p.brand, p.shortName, p.collection, p.fabric, ...p.occasions].join(" ").toLowerCase().includes(n),
-  );
+export function searchProducts(q: string, herSize?: string) {
+  const raw = q.trim();
+  if (!raw) return allProducts();
+  const n = fold(raw);
+  const pool = allProducts();
+  const sizeTok = n.match(/\b(pp|p|m|g|gg|34|36|38|40|42)\b/);
+  const size = sizeTok ? sizeTok[1].toUpperCase().replace("34", "PP").replace("36", "P").replace("38", "M").replace("40", "G").replace("42", "GG") : herSize;
+  const occ = inferOccasions([], "", raw);
+  const wantWhite = /branco|white|off|nude|marfim|cru|palha|bege|ivory/.test(n);
+  const wantNight = /noite|gala|festa|paete|brilho|bordado/.test(n);
+  const wantDress = /vestido/.test(n);
+  const wantSale = /sale|arquivo|desconto/.test(n);
+  const scored = pool.map((p) => {
+    const hay = fold([p.name, p.brand, p.shortName, p.collection, p.fabric, p.composition, ...p.occasions].join(" "));
+    let s = 0;
+    for (const w of n.split(/\s+/).filter((x) => x.length > 2 && !/^(pp|para|com|uma|pra)$/.test(x))) {
+      if (hay.includes(w)) s += 3;
+    }
+    if (occ.some((o) => p.occasions.includes(o))) s += 8;
+    if (wantWhite && /branco|white|off|nude|marfim|cru|palha|bege/.test(hay)) s += 6;
+    if (wantNight && p.occasions.includes("eventos-noturnos")) s += 5;
+    if (wantDress && p.category === "vestido") s += 2;
+    if (wantSale && p.compareAt && p.compareAt > p.price) s += 4;
+    if (size) {
+      const on = sizeOnHand(p.shopifyHandle ?? p.slug, size);
+      if (on == null) s += 1;
+      else if (on > 0) s += 5;
+      else s -= 8;
+    }
+    return { p, s };
+  });
+  const hit = scored.filter((x) => x.s > 0).sort((a, b) => b.s - a.s).map((x) => x.p);
+  return hit.length ? hit : pool.filter((p) => fold(`${p.name} ${p.brand}`).includes(n.split(/\s+/)[0] ?? n));
 }
 
 export function relatedProducts(product: Product, limit = 4) {
