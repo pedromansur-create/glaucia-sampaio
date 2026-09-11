@@ -5,9 +5,8 @@ import { pageHead } from "@/lib/seo";
 export const Route = createFileRoute("/trocas")({
   head: () =>
     pageHead({
-      title: "Política de trocas e devoluções",
-      description:
-        "Compras pela internet na Gláucia Sampaio: 7 dias para desistir (CDC art. 49), 90 dias para defeito (art. 18). Frete de volta por nossa conta no arrependimento.",
+      title: "Política de trocas",
+      description: `Na Gláucia Sampaio, ${RETURN_DAYS} dias para desistir da compra pela internet. Defeito, 90 dias. Frete de volta por nossa conta no arrependimento.`,
       path: "/trocas",
     }),
   component: Trocas,
@@ -15,89 +14,55 @@ export const Route = createFileRoute("/trocas")({
 
 function Trocas() {
   return (
-    <article className="mx-auto max-w-xl px-6 py-16 text-[15px] leading-[1.7] md:px-10 md:py-24">
-      <h1 className="text-[13px] tracking-[0.28em] uppercase">Política de trocas</h1>
-      <p className="mt-8">
-        No Brasil, compra feita pela internet tem proteção do Código de Defesa do Consumidor. A
-        regra é clara. A gente só traduz.
-      </p>
-      <p className="mt-4 text-muted">
-        Existem duas situações: você desiste da compra, ou a peça veio com defeito. O resto é
-        conversa com a casa.
+    <article className="mx-auto max-w-md px-6 py-20 text-[14px] leading-[1.85] text-ink md:py-28">
+      <h1 className="text-[11px] tracking-[0.32em] text-subtle uppercase">Trocas</h1>
+
+      <p className="mt-10">
+        Comprar daqui, de casa, é diferente de provar na Rua Rodolfo Correa. A lei cuida disso.
+        A casa também.
       </p>
 
-      <h2 className="mt-14 text-[13px] tracking-[0.22em] uppercase">1. Direito de arrependimento</h2>
-      <p className="mt-4">
-        Você não provou a peça. Por isso a lei garante o direito de desistir, sem motivo — artigo 49
-        do CDC.
-      </p>
-      <p className="mt-4">
-        <strong className="font-medium">Prazo.</strong> {RETURN_DAYS} dias corridos, contados da
-        data em que você recebeu o produto.
-      </p>
-      <p className="mt-4">
-        <strong className="font-medium">Justificativa.</strong> Não precisa. Não gostou, o tamanho
-        não serviu, mudou de ideia: devolve.
-      </p>
-      <p className="mt-4">
-        <strong className="font-medium">Reembolso e frete.</strong> Devolvemos 100% do que foi
-        pago, incluindo o frete original. O frete de volta (logística reversa) é por nossa conta.
-        Você não paga para desfazer.
-      </p>
-      <p className="mt-4 text-muted">
-        A peça precisa estar sem uso, com etiqueta e na embalagem. Perfume, lavagem ou etiqueta
-        cortada encerram o arrependimento — a não ser que exista defeito.
+      <p className="mt-6">
+        Se a peça chegar e não for a que você imaginou, você tem {RETURN_DAYS} dias corridos —
+        do dia do recebimento — para devolver. Sem explicar. Não serviu, não era o tom, mudou
+        de ideia. Devolvemos o que foi pago, inclusive o frete da ida. O de volta fica conosco.
       </p>
 
-      <h2 className="mt-14 text-[13px] tracking-[0.22em] uppercase">2. Produto com defeito</h2>
-      <p className="mt-4">
-        Roupa é bem durável. Se houver vício — costura, tecido, zíper, tingimento — o prazo para
-        reclamar é de 90 dias a partir do recebimento. Artigo 18 do CDC.
-      </p>
-      <p className="mt-4">
-        Depois do aviso, a loja ou o fabricante tem até 30 dias para resolver. Se não resolver
-        nesse prazo, você escolhe:
-      </p>
-      <ol className="mt-4 list-decimal space-y-2 pl-5">
-        <li>a troca por uma peça nova, igual, em perfeito estado;</li>
-        <li>a devolução integral do dinheiro (produto e frete);</li>
-        <li>um desconto proporcional, se quiser ficar com a peça mesmo assim.</li>
-      </ol>
-
-      <h2 className="mt-14 text-[13px] tracking-[0.22em] uppercase">3. Tamanho ou cor depois dos 7 dias</h2>
-      <p className="mt-4">
-        Passou a semana do arrependimento e a peça não tem defeito? A lei não obriga a troca só
-        porque a cor não agradou ou o tamanho ficou ruim.
-      </p>
-      <p className="mt-4 text-muted">
-        Ainda assim, fale com a gente. Muita coisa se resolve na Rua Rodolfo Correa ou no
-        WhatsApp — especialmente PP e P, que é de onde vêm as dúvidas.
+      <p className="mt-6 text-muted">
+        Peça sem uso, etiqueta no lugar, caixa fechada. Perfume ou lavagem encerram esse prazo.
       </p>
 
-      <h2 className="mt-14 text-[13px] tracking-[0.22em] uppercase">Como pedir</h2>
-      <ol className="mt-4 list-decimal space-y-2 pl-5">
-        <li>Guarde a nota fiscal, o e-mail do pedido, as etiquetas e a caixa.</li>
-        <li>Chame no WhatsApp com o número do pedido e o que precisa: desistência, defeito ou tamanho.</li>
-        <li>A personal shopper combina a coleta. Você não vai ao correio sozinha.</li>
-      </ol>
+      <p className="mt-6">
+        Se houver defeito — uma costura, um tecido, um zíper — o prazo é outro: noventa dias.
+        Avisou, a casa tem trinta dias para resolver. Se não resolver, você escolhe: outra peça,
+        o dinheiro, ou um acerto no valor.
+      </p>
 
-      <div className="mt-14">
+      <p className="mt-6 text-muted">
+        Passou a semana e a peça está íntegra? Tamanho e cor, a lei não obriga. Mesmo assim,
+        chame. PP e P a gente costuma ajeitar.
+      </p>
+
+      <p className="mt-6">
+        Guarde a nota e o e-mail do pedido. Um recado no WhatsApp basta. A shopper combina a
+        coleta.
+      </p>
+
+      <p className="mt-14">
         <a
-          href={whatsappUrl("Olá, Gláucia Sampaio. Preciso de ajuda com uma troca ou devolução.")}
+          href={whatsappUrl("Olá, preciso de ajuda com uma troca.")}
           target="_blank"
           rel="noreferrer"
-          className="inline-block text-[12px] tracking-[0.2em] uppercase underline"
+          className="text-[11px] tracking-[0.22em] uppercase"
         >
-          WhatsApp · trocas
+          WhatsApp
         </a>
-      </div>
+      </p>
 
-      <p className="mt-16 text-[12px] leading-relaxed text-subtle">
+      <p className="mt-20 text-[11px] leading-relaxed tracking-[0.04em] text-subtle">
         {BOUTIQUE.legalName}
         <br />
         CNPJ {BOUTIQUE.cnpj}
-        <br />
-        {BOUTIQUE.address} · {BOUTIQUE.city} · {BOUTIQUE.cep}
       </p>
     </article>
   );
