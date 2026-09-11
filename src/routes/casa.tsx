@@ -112,8 +112,8 @@ function Casa() {
     <article className="mx-auto max-w-xl px-6 py-16 text-[14px] leading-[1.85]">
       <h1 className="text-[11px] tracking-[0.32em] text-subtle uppercase">Casa</h1>
       <p className="mt-6 text-muted">
-        Caderno da cliente: Shopify. Caixa e PDV: CaixaRCS. Recado: Mac mini local
-        {mac ? " · ligado" : ""}.
+        Caderno: Shopify. Caixa: CaixaRCS. Recado: Mini da casa
+        {mac ? " · ligado" : ""}. Lucy só usa o site — não o Terminal.
       </p>
       <p className="mt-6 flex flex-wrap gap-5 text-[11px] tracking-[0.22em] uppercase">
         <a href={SHOPIFY_CUSTOMERS} target="_blank" rel="noreferrer">

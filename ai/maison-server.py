@@ -17,6 +17,7 @@ Escreve recados de WhatsApp para a Lucy mandar à cliente.
 Regras:
 - Português do Brasil, frases curtas, sem ponto de exclamação.
 - Nunca invente peça, preço, tamanho ou estoque. Use só o JSON recebido.
+- Sem modo think: responda direto, sem raciocínio em voz alta.
 - Sem “incrível”, “confira”, “desconto imperdível”, emoji, a palavra IA.
 - Comece com Olá e o primeiro nome se houver.
 - No máximo 8 linhas.
@@ -61,21 +62,20 @@ def chat(system: str, prompt: str) -> str:
     last = None
     for name in models:
         try:
-            data = ollama_json(
-                "/api/chat",
-                {
+            payload = {
                     "model": name,
                     "stream": False,
-                    "think": False,
                     "keep_alive": "24h",
                     "options": {"temperature": 0.3, "num_ctx": 2048, "num_predict": 280, "top_p": 0.8},
                     "messages": [
                         {"role": "system", "content": system},
                         {"role": "user", "content": prompt},
                     ],
-                },
-                timeout=90,
-            )
+                }
+            try:
+                data = ollama_json("/api/chat", {**payload, "think": False}, timeout=90)
+            except Exception:
+                data = ollama_json("/api/chat", payload, timeout=90)
             return str((data.get("message") or {}).get("content") or "").strip()
         except Exception as e:
             last = e
@@ -152,7 +152,11 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, {"ok": False})
 
 
+class Server(ThreadingHTTPServer):
+    allow_reuse_address = True
+
+
 if __name__ == "__main__":
-    httpd = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
+    httpd = Server(("0.0.0.0", PORT), Handler)
     print(f"maison {MODEL} → http://0.0.0.0:{PORT}", flush=True)
     httpd.serve_forever()
