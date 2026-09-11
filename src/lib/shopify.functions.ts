@@ -147,8 +147,12 @@ function mapCatalogProduct(raw: RawProduct): Product {
 
 let catalogCache: { at: number; items: Product[] } | null = null;
 
+export function bustShopifyCatalogCache() {
+  catalogCache = null;
+}
+
 export const listShopifyCatalog = createServerFn({ method: "GET" }).handler(async () => {
-  if (catalogCache && Date.now() - catalogCache.at < 5 * 60 * 1000) return catalogCache.items;
+  if (catalogCache && Date.now() - catalogCache.at < 60 * 1000) return catalogCache.items;
   const store = DEFAULT_SHOPIFY_STORE;
   const items: Product[] = [];
   for (let page = 1; page <= 12; page += 1) {
