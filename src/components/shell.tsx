@@ -115,6 +115,9 @@ function LegalBar() {
         <Link to="/atelier" className="underline">
           Shopper
         </Link>
+        <Link to="/casa" className="underline">
+          Casa
+        </Link>
       </p>
     </div>
   );

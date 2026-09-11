@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AtelierRouteImport } from './routes/atelier'
 import { Route as BoutiqueRouteImport } from './routes/boutique'
+import { Route as CasaRouteImport } from './routes/casa'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ColecaoRouteImport } from './routes/colecao'
 import { Route as LookbookRouteImport } from './routes/lookbook'
@@ -41,6 +42,11 @@ const AtelierRoute = AtelierRouteImport.update({
 const BoutiqueRoute = BoutiqueRouteImport.update({
   id: '/boutique',
   path: '/boutique',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CasaRoute = CasaRouteImport.update({
+  id: '/casa',
+  path: '/casa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRoute
   '/atelier': typeof AtelierRoute
   '/boutique': typeof BoutiqueRoute
+  '/casa': typeof CasaRoute
   '/checkout': typeof CheckoutRoute
   '/colecao': typeof ColecaoRouteWithChildren
   '/lookbook': typeof LookbookRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRoute
   '/atelier': typeof AtelierRoute
   '/boutique': typeof BoutiqueRoute
+  '/casa': typeof CasaRoute
   '/checkout': typeof CheckoutRoute
   '/colecao': typeof ColecaoRouteWithChildren
   '/lookbook': typeof LookbookRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/app': typeof AppRoute
   '/atelier': typeof AtelierRoute
   '/boutique': typeof BoutiqueRoute
+  '/casa': typeof CasaRoute
   '/checkout': typeof CheckoutRoute
   '/colecao': typeof ColecaoRouteWithChildren
   '/lookbook': typeof LookbookRoute
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atelier'
     | '/boutique'
+    | '/casa'
     | '/checkout'
     | '/colecao'
     | '/lookbook'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atelier'
     | '/boutique'
+    | '/casa'
     | '/checkout'
     | '/colecao'
     | '/lookbook'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atelier'
     | '/boutique'
+    | '/casa'
     | '/checkout'
     | '/colecao'
     | '/lookbook'
@@ -188,6 +200,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRoute
   AtelierRoute: typeof AtelierRoute
   BoutiqueRoute: typeof BoutiqueRoute
+  CasaRoute: typeof CasaRoute
   CheckoutRoute: typeof CheckoutRoute
   ColecaoRoute: typeof ColecaoRouteWithChildren
   LookbookRoute: typeof LookbookRoute
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       path: '/boutique'
       fullPath: '/boutique'
       preLoaderRoute: typeof BoutiqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/casa': {
+      id: '/casa'
+      path: '/casa'
+      fullPath: '/casa'
+      preLoaderRoute: typeof CasaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -321,6 +341,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRoute,
   AtelierRoute: AtelierRoute,
   BoutiqueRoute: BoutiqueRoute,
+  CasaRoute: CasaRoute,
   CheckoutRoute: CheckoutRoute,
   ColecaoRoute: ColecaoRouteWithChildren,
   LookbookRoute: LookbookRoute,

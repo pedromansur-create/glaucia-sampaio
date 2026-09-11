@@ -93,6 +93,9 @@ export function productJsonLd(p: Product) {
     material: p.composition || p.fabric,
     category: p.category,
     url,
+    countryOfOrigin: "BR",
+    audience: { "@type": "PeopleAudience", suggestedGender: "female", geographicArea: "BR" },
+    keywords: [p.brand, ...p.occasions, p.fabric, "Uberlândia", "vestido festa"].filter(Boolean).join(", "),
     offers: {
       "@type": "Offer",
       url,
