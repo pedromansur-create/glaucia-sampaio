@@ -17,7 +17,13 @@ MODEL="${MAISON_MODEL:-qwen3.5:9b}"
 echo "Baixando ${MODEL} (uma vez, alguns minutos)…"
 ollama pull "$MODEL"
 
-chmod +x maison-server.mjs start.sh
+PYTHON="$(command -v python3 || true)"
+if [ -z "$PYTHON" ]; then
+  echo "Instala Python 3:  brew install python"
+  exit 1
+fi
+
+chmod +x maison-server.py start.sh
 
 PLIST="$HOME/Library/LaunchAgents/com.glauciasampaio.maison.plist"
 cat > "$PLIST" <<EOF
@@ -28,8 +34,8 @@ cat > "$PLIST" <<EOF
   <key>Label</key><string>com.glauciasampaio.maison</string>
   <key>ProgramArguments</key>
   <array>
-    <string>$(command -v node)</string>
-    <string>$(pwd)/maison-server.mjs</string>
+    <string>${PYTHON}</string>
+    <string>$(pwd)/maison-server.py</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
