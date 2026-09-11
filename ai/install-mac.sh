@@ -12,8 +12,8 @@ echo "Subindo Ollama…"
 open -a Ollama 2>/dev/null || (ollama serve >/tmp/ollama.log 2>&1 &)
 sleep 3
 
-# 7B Q4 cabe no M4 16 GB (~5 GB). Se ficar apertado: ollama pull llama3.2:3b
-MODEL="${MAISON_MODEL:-qwen2.5:7b}"
+# 9B Q4 ~6.6 GB. Melhor PT-BR no M4 16 GB. Fallback apertado: llama3.2:3b
+MODEL="${MAISON_MODEL:-qwen3.5:9b}"
 echo "Baixando ${MODEL} (uma vez, alguns minutos)…"
 ollama pull "$MODEL"
 

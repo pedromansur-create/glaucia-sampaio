@@ -7,7 +7,7 @@
 import http from "node:http";
 
 const OLLAMA = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
-const MODEL = process.env.MAISON_MODEL || "qwen2.5:7b";
+const MODEL = process.env.MAISON_MODEL || "qwen3.5:9b";
 const PORT = Number(process.env.PORT || 8787);
 
 const SYSTEM = `Você é a voz da boutique Gláucia Sampaio, Uberlândia.
