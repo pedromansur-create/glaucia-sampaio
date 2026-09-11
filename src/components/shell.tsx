@@ -44,7 +44,7 @@ export function Shell({ children }: { children: ReactNode }) {
     <div className="relative min-h-dvh bg-bg text-ink">
       {!takeover && <Header />}
       <main>{children}</main>
-      {pathname.startsWith("/checkout") || pathname.startsWith("/trocas") ? <LegalBar /> : null}
+      {!takeover ? <LegalBar /> : null}
       <CartDrawer />
       <NavMenu />
       <SearchPanel />
@@ -106,7 +106,7 @@ function Header() {
 
 function Footer() {
   return (
-    <footer className="mt-24 hidden border-t border-line px-6 py-16 md:block md:px-12">
+    <footer className="mt-16 border-t border-line px-6 py-10 md:mt-24 md:px-12 md:py-16">
       <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-3">
         <div>
           <p className="font-display text-3xl tracking-[0.12em]">GS</p>
