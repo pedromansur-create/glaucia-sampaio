@@ -97,28 +97,20 @@ export function IosInstallSheet() {
   if (!show) return null;
 
   return (
-    <aside className="fixed inset-x-3 bottom-[5.5rem] z-40 rounded-xl border border-line bg-paper p-4 shadow-xl md:hidden">
-      <div className="flex items-start gap-3">
-        <img src="/apple-touch-icon.png" alt="" className="size-12 rounded-[11px]" />
-        <div className="min-w-0 flex-1">
-          <p className="font-display text-xl leading-tight">App iOS</p>
-          <p className="mt-1 text-xs leading-relaxed text-muted">
-            No Safari: toque em Compartilhar
-            <Share size={11} className="mx-1 inline" /> e depois em{" "}
-            <strong>Adicionar à Tela de Início</strong>.
-          </p>
-        </div>
-        <button
-          type="button"
-          className="text-xs text-muted"
-          onClick={() => {
-            localStorage.setItem("gs-ios-install", "1");
-            setShow(false);
-          }}
-        >
-          OK
-        </button>
-      </div>
+    <aside className="fixed inset-x-0 bottom-0 z-40 bg-white px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-center md:hidden">
+      <p className="text-[10px] tracking-[0.18em] uppercase">
+        Safari → compartilhar → adicionar à tela de início
+      </p>
+      <button
+        type="button"
+        className="mt-1 text-[10px] tracking-[0.16em] text-subtle uppercase"
+        onClick={() => {
+          localStorage.setItem("gs-ios-install", "1");
+          setShow(false);
+        }}
+      >
+        OK
+      </button>
     </aside>
   );
 }

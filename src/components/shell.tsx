@@ -16,11 +16,25 @@ import {
 import { cn } from "@/lib/cn";
 import { formatBRL } from "@/lib/format";
 import { ShopifyPayButton } from "@/components/ios";
+import { IosInstallSheet } from "@/components/ios";
 import { cartTotals, itemKey, useShop } from "@/lib/store";
+import { hydrateFromShopify } from "@/lib/catalog";
+import { listShopifyCatalog } from "@/lib/shopify.functions";
 
 export function Shell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const takeover = pathname.startsWith("/produto");
+  useEffect(() => {
+    let alive = true;
+    listShopifyCatalog()
+      .then((items) => {
+        if (alive && items?.length) hydrateFromShopify(items);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
   return (
     <div className="relative min-h-dvh bg-bg text-ink">
       {!takeover && <Header />}
@@ -30,6 +44,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <NavMenu />
       <SearchPanel />
       <SizeGuide />
+      <IosInstallSheet />
     </div>
   );
 }
@@ -44,14 +59,14 @@ function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-bg pt-[max(0.35rem,env(safe-area-inset-top))]">
-      <div className="grid grid-cols-[2.75rem_1fr_7.5rem] items-center px-2 md:grid-cols-[3rem_1fr_8rem]">
+      <div className="grid grid-cols-[6.5rem_1fr_6.5rem] items-center px-2 md:grid-cols-[8rem_1fr_8rem]">
         <button
           type="button"
           aria-label="Menu"
           onClick={() => setMenuOpen(true)}
-          className="grid size-10 place-items-center text-lg leading-none"
+          className="flex h-10 items-center gap-1.5 px-1 text-[10px] tracking-[0.22em] uppercase"
         >
-          ≡
+          ≡ MENU
         </button>
         <Link to="/" className="min-w-0 text-center">
           <span className="block truncate text-[11px] tracking-[0.42em] uppercase md:text-[13px] md:tracking-[0.48em]">
@@ -63,9 +78,9 @@ function Header() {
             type="button"
             aria-label="Buscar"
             onClick={() => setSearchOpen(true)}
-            className="grid size-10 place-items-center text-[11px] tracking-[0.14em]"
+            className="grid size-10 place-items-center text-[15px] leading-none"
           >
-            /
+            ?
           </button>
           <button type="button" aria-label="Zoom" onClick={cycleZoom} className="grid size-10 place-items-center text-lg">
             +
@@ -74,9 +89,9 @@ function Header() {
             type="button"
             aria-label="Sacola"
             onClick={() => setCartOpen(true)}
-            className="grid size-10 place-items-center text-[11px] tabular-nums"
+            className="flex h-10 items-center px-1 text-[10px] tracking-[0.22em] uppercase"
           >
-            {count || ""}
+            BAG{count ? ` ${count}` : ""}
           </button>
         </div>
       </div>
@@ -332,6 +347,12 @@ function NavMenu() {
         <nav className="mt-8 flex shrink-0 flex-col gap-3 text-[11px] tracking-[0.22em] uppercase">
           <Link to="/" onClick={close}>
             Shop
+          </Link>
+          <Link to="/colecao/$slug" params={{ slug: "novidades" }} onClick={close}>
+            Novidades
+          </Link>
+          <Link to="/colecao/$slug" params={{ slug: "arquivo" }} onClick={close}>
+            Sale
           </Link>
           <Link to="/ocasioes/$slug" params={{ slug: "madrinhas" }} onClick={close}>
             Casamento
