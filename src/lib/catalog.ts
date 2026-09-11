@@ -795,11 +795,21 @@ export function allProducts() {
 }
 
 export function getProduct(slug: string) {
-  const pool = allProducts();
+  const raw = decodeURIComponent(slug || "").trim();
+  if (!raw) return undefined;
+  const n = raw.toLowerCase();
+  const pool = [...allProducts(), ...products];
   return (
-    pool.find((p) => p.slug === slug) ??
-    pool.find((p) => p.shopifyHandle === slug) ??
-    products.find((p) => p.slug === slug)
+    pool.find((p) => p.slug === raw) ??
+    pool.find((p) => p.shopifyHandle === raw) ??
+    pool.find((p) => p.slug.toLowerCase() === n) ??
+    pool.find((p) => (p.shopifyHandle ?? "").toLowerCase() === n) ??
+    pool.find((p) => n.length > 10 && (p.slug.toLowerCase().includes(n) || n.includes(p.slug.toLowerCase()))) ??
+    pool.find(
+      (p) =>
+        n.length > 10 &&
+        ((p.shopifyHandle ?? "").toLowerCase().includes(n) || n.includes((p.shopifyHandle ?? "").toLowerCase())),
+    )
   );
 }
 

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { getProduct, whatsappUrl, FREE_SHIPPING_FROM, BOUTIQUE } from "@/lib/catalog";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { catalogStamp, getProduct, whatsappUrl, FREE_SHIPPING_FROM, BOUTIQUE, subscribeCatalog } from "@/lib/catalog";
 import { jsonLdScript, pageHead, productJsonLd } from "@/lib/seo";
 import { formatBRL } from "@/lib/format";
 import {
@@ -35,6 +35,7 @@ export const Route = createFileRoute("/produto/$slug")({
 });
 
 function ProductPage() {
+  useSyncExternalStore(subscribeCatalog, catalogStamp, catalogStamp);
   const { slug } = Route.useParams();
   const navigate = useNavigate();
   const p = getProduct(slug);
@@ -99,10 +100,27 @@ function ProductPage() {
 
   if (!p) {
     return (
-      <div className="grid min-h-dvh place-items-center">
-        <button type="button" onClick={() => navigate({ to: "/" })} className="text-xs tracking-[0.2em] uppercase">
-          Back
-        </button>
+      <div className="fixed inset-0 z-50 flex flex-col bg-white">
+        <div className="flex items-center justify-between px-3 pt-[max(0.4rem,env(safe-area-inset-top))]">
+          <button type="button" onClick={() => navigate({ to: "/" })} className="grid size-11 place-items-center text-lg" aria-label="Fechar">
+            ×
+          </button>
+        </div>
+        <div className="flex min-h-0 flex-1 items-center justify-center px-8">
+          <p className="text-center text-[11px] tracking-[0.2em] uppercase">
+            {slug.replace(/-/g, " ")}
+          </p>
+        </div>
+        <div className="px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
+          <a
+            href={whatsappUrl(`Olá, quero a personal shopper para ${slug.replace(/-/g, " ")}.`)}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-1 block text-center text-[10px] tracking-[0.22em] uppercase"
+          >
+            Personal shopper
+          </a>
+        </div>
       </div>
     );
   }
