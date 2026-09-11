@@ -1,18 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
-import { useEffect, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import {
   BOUTIQUE,
   FREE_SHIPPING_FROM,
   INSTAGRAM,
   WELCOME_CODE,
-  allProducts,
-  catalogStamp,
   getProduct,
-  productsForCollection,
-  productsForOccasion,
   searchProducts,
-  subscribeCatalog,
   whatsappUrl,
 } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
@@ -205,7 +200,7 @@ function CartDrawer() {
         )}
       >
         <div className="flex items-center justify-between px-6 py-5">
-          <h2 className="font-display text-3xl">Sacola</h2>
+          <h2 className="text-[12px] tracking-[0.28em] uppercase">Sacola</h2>
           <button type="button" aria-label="Fechar" onClick={() => setOpen(false)} className="grid size-11 place-items-center">
             <X size={18} />
           </button>
@@ -329,17 +324,9 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
 }
 
 function NavMenu() {
-  useSyncExternalStore(subscribeCatalog, catalogStamp, catalogStamp);
   const open = useShop((s) => s.menuOpen);
   const setOpen = useShop((s) => s.setMenuOpen);
   const close = () => setOpen(false);
-  const shopImg = allProducts()[0]?.images[0];
-  const novoImg = productsForCollection("novidades")[0]?.images[0];
-  const saleImg = productsForCollection("arquivo")[0]?.images[0];
-  const casaImg = productsForOccasion("madrinhas")[0]?.images[0];
-  const whiteImg = productsForOccasion("all-white")[0]?.images[0];
-  const noiteImg = productsForOccasion("eventos-noturnos")[0]?.images[0];
-
   return (
     <aside className={cn("fixed inset-0 z-[60]", open ? "visible pointer-events-auto" : "invisible pointer-events-none")}>
       <button
@@ -350,7 +337,7 @@ function NavMenu() {
       />
       <div
         className={cn(
-          "absolute top-0 left-0 flex h-full w-full max-w-lg flex-col bg-paper px-5 py-5 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:px-8",
+          "absolute top-0 left-0 flex h-full w-full max-w-sm flex-col bg-paper px-6 py-5 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -359,78 +346,32 @@ function NavMenu() {
             <X size={18} />
           </button>
         </div>
-        <nav className="min-h-0 flex-1 overflow-y-auto">
-          <MenuRow to="/" label="Shop" img={shopImg} onClick={close} />
-          <MenuRow
-            to="/colecao/$slug"
-            params={{ slug: "novidades" }}
-            label="Novidades"
-            img={novoImg}
-            onClick={close}
-          />
-          <MenuRow
-            to="/colecao/$slug"
-            params={{ slug: "arquivo" }}
-            label="Sale"
-            img={saleImg}
-            onClick={close}
-          />
-          <MenuRow
-            to="/ocasioes/$slug"
-            params={{ slug: "madrinhas" }}
-            label="Casamento"
-            img={casaImg}
-            onClick={close}
-          />
-          <MenuRow
-            to="/ocasioes/$slug"
-            params={{ slug: "all-white" }}
-            label="All White"
-            img={whiteImg}
-            onClick={close}
-          />
-          <MenuRow
-            to="/ocasioes/$slug"
-            params={{ slug: "eventos-noturnos" }}
-            label="Noite"
-            img={noiteImg}
-            onClick={close}
-          />
-          <MenuRow to="/trocas" label="Política de trocas" onClick={close} />
+        <nav className="mt-8 flex flex-col">
+          <Link to="/" onClick={close} className="block py-3.5 text-[12px] tracking-[0.28em] uppercase">
+            Shop
+          </Link>
+          <Link to="/colecao/$slug" params={{ slug: "novidades" }} onClick={close} className="block py-3.5 text-[12px] tracking-[0.28em] uppercase">
+            Novidades
+          </Link>
+          <Link to="/colecao/$slug" params={{ slug: "arquivo" }} onClick={close} className="block py-3.5 text-[12px] tracking-[0.28em] uppercase">
+            Sale
+          </Link>
+          <Link to="/ocasioes/$slug" params={{ slug: "madrinhas" }} onClick={close} className="block py-3.5 text-[12px] tracking-[0.28em] uppercase">
+            Casamento
+          </Link>
+          <Link to="/ocasioes/$slug" params={{ slug: "all-white" }} onClick={close} className="block py-3.5 text-[12px] tracking-[0.28em] uppercase">
+            All White
+          </Link>
+          <Link to="/ocasioes/$slug" params={{ slug: "eventos-noturnos" }} onClick={close} className="block py-3.5 text-[12px] tracking-[0.28em] uppercase">
+            Noite
+          </Link>
+          <Link to="/trocas" onClick={close} className="block py-3.5 text-[12px] tracking-[0.28em] uppercase">
+            Política de trocas
+          </Link>
         </nav>
         <SizeMemory />
       </div>
     </aside>
-  );
-}
-
-function MenuRow({
-  to,
-  params,
-  label,
-  img,
-  onClick,
-}: {
-  to: "/colecao/$slug" | "/ocasioes/$slug" | "/" | "/trocas";
-  params?: { slug: string };
-  label: string;
-  img?: string;
-  onClick: () => void;
-}) {
-  return (
-    <Link
-      to={to}
-      params={params}
-      onClick={onClick}
-      className="flex items-center gap-4 border-b border-line py-3"
-    >
-      {img ? (
-        <img src={img} alt="" className="h-[72px] w-12 shrink-0 bg-white object-cover object-top" />
-      ) : (
-        <span className="h-[72px] w-12 shrink-0 bg-white" />
-      )}
-      <span className="text-[12px] tracking-[0.28em] uppercase">{label}</span>
-    </Link>
   );
 }
 

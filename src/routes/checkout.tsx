@@ -64,7 +64,10 @@ function Checkout() {
   return (
     <div className="mx-auto grid max-w-5xl gap-12 px-6 py-12 md:grid-cols-[1.1fr_0.9fr] md:px-10">
       <form onSubmit={onSubmit} className="space-y-5">
-        <h1 className="font-display text-5xl">Checkout</h1>
+        <Link to="/" className="block text-[11px] tracking-[0.42em] uppercase">
+          Gláucia Sampaio
+        </Link>
+        <h1 className="mt-10 text-[12px] tracking-[0.28em] uppercase">Checkout</h1>
         <p className="text-sm leading-relaxed text-muted">
           Frete grátis acima de {formatBRL(FREE_SHIPPING_FROM)}.
           {welcomeApplied ? " 10% da primeira compra já aplicado." : ""}
