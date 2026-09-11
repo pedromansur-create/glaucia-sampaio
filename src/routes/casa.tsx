@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { formatBRL } from "@/lib/format";
 import { maisonAdvise, quietClients } from "@/lib/maison-ai";
+import { whatsappUrl } from "@/lib/catalog";
 import { listShopifyCustomers, type ShopifyCustomer } from "@/lib/shopify.functions";
 import { SHOPIFY_ADMIN } from "@/lib/shopify";
 import { pageHead } from "@/lib/seo";
@@ -25,6 +26,8 @@ function Casa() {
   const [book, setBook] = useState<ShopifyCustomer[]>([]);
   const [crm, setCrm] = useState<"loading" | "shopify" | "none">("loading");
   const [picked, setPicked] = useState<number | null>(null);
+  const [draft, setDraft] = useState("");
+  const [mac, setMac] = useState(false);
   const client = book.find((c) => c.id === picked) ?? null;
   const advice = useMemo(
     () =>
@@ -71,11 +74,46 @@ function Casa() {
     };
   }, []);
 
+  useEffect(() => {
+    setDraft(advice.draft);
+    if (!q && !client) return;
+    const body = {
+      query: advice.query,
+      name: client?.name ?? "",
+      size: advice.size,
+      occasion: advice.occasion,
+      picks: advice.picks.map((x) => ({
+        brand: x.product.brand,
+        name: x.product.shortName,
+        price: x.product.price,
+        composition: x.product.composition || x.product.fabric,
+        sizeNote: x.sizeNote,
+      })),
+    };
+    const ac = new AbortController();
+    fetch("/api/maison", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: ac.signal,
+    })
+      .then((r) => r.json())
+      .then((d: { ok?: boolean; draft?: string; local?: boolean }) => {
+        if (d.ok && d.draft) {
+          setDraft(d.draft);
+          setMac(true);
+        }
+      })
+      .catch(() => {});
+    return () => ac.abort();
+  }, [advice, q, client]);
+
   return (
     <article className="mx-auto max-w-xl px-6 py-16 text-[14px] leading-[1.85]">
       <h1 className="text-[11px] tracking-[0.32em] text-subtle uppercase">Casa</h1>
       <p className="mt-6 text-muted">
-        Caderno da cliente: Shopify. Caixa e PDV: CaixaRCS. Aqui a vitrine escolhe a peça.
+        Caderno da cliente: Shopify. Caixa e PDV: CaixaRCS. Recado: Mac mini local
+        {mac ? " · ligado" : ""}.
       </p>
       <p className="mt-6 flex flex-wrap gap-5 text-[11px] tracking-[0.22em] uppercase">
         <a href={SHOPIFY_CUSTOMERS} target="_blank" rel="noreferrer">
@@ -118,12 +156,12 @@ function Casa() {
               </li>
             ))}
           </ul>
-          <pre className="mt-10 whitespace-pre-wrap text-[13px] leading-relaxed text-muted">{advice.draft}</pre>
+          <pre className="mt-10 whitespace-pre-wrap text-[13px] leading-relaxed text-muted">{draft || advice.draft}</pre>
           <p className="mt-4 flex flex-wrap gap-5 text-[11px] tracking-[0.2em] uppercase">
-            <button type="button" onClick={() => void navigator.clipboard.writeText(advice.draft)}>
+            <button type="button" onClick={() => void navigator.clipboard.writeText(draft || advice.draft)}>
               Copiar recado
             </button>
-            <a href={advice.whatsapp} target="_blank" rel="noreferrer">
+            <a href={whatsappUrl(draft || advice.draft)} target="_blank" rel="noreferrer">
               WhatsApp
             </a>
           </p>
