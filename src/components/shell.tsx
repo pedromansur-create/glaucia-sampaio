@@ -435,6 +435,7 @@ function SearchPanel() {
 function SizeGuide() {
   const open = useShop((s) => s.sizeOpen);
   const setOpen = useShop((s) => s.setSizeOpen);
+  const [armed, setArmed] = useState(false);
   const rows = [
     ["PP", "80–84", "62–66", "88–92"],
     ["P", "84–88", "66–70", "92–96"],
@@ -442,37 +443,49 @@ function SizeGuide() {
     ["G", "92–96", "74–78", "100–104"],
     ["GG", "96–102", "78–84", "104–110"],
   ];
+  useEffect(() => {
+    if (!open) {
+      setArmed(false);
+      return;
+    }
+    const t = window.setTimeout(() => setArmed(true), 80);
+    return () => window.clearTimeout(t);
+  }, [open]);
   if (!open) return null;
   return (
-    <aside className="fixed inset-0 z-[100] grid place-items-center p-4">
+    <aside className="fixed inset-0 z-[100] grid place-items-center bg-white/90 p-4">
       <button
         type="button"
         aria-label="Fechar guia"
-        onClick={() => setOpen(false)}
-        className={cn("absolute inset-0 bg-ink/35", open ? "opacity-100" : "opacity-0")}
+        onClick={() => armed && setOpen(false)}
+        className="absolute inset-0"
       />
       <div
-        className={cn(
-          "relative w-full max-w-lg rounded-xl bg-paper p-8 transition-all duration-300",
-          open ? "scale-100 opacity-100" : "scale-[0.96] opacity-0",
-        )}
+        className="relative z-10 w-full max-w-sm bg-white p-6"
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
-        <h3 className="font-display text-3xl">Medidas</h3>
-        <p className="mt-2 text-sm text-muted">Em centímetros, corpo. Em dúvida, a shopper responde no WhatsApp.</p>
-        <table className="mt-6 w-full text-left text-sm">
-          <thead className="text-[11px] tracking-widest text-subtle uppercase">
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] tracking-[0.28em] uppercase">Medidas</p>
+          <button type="button" onClick={() => setOpen(false)} className="grid size-11 place-items-center text-lg" aria-label="Fechar">
+            ×
+          </button>
+        </div>
+        <p className="mt-2 text-[12px] text-muted">Centímetros, corpo.</p>
+        <table className="mt-5 w-full text-left text-[13px]">
+          <thead className="text-[10px] tracking-[0.18em] text-muted uppercase">
             <tr>
-              <th className="pb-2">Tam</th>
-              <th className="pb-2">Busto</th>
-              <th className="pb-2">Cintura</th>
-              <th className="pb-2">Quadril</th>
+              <th className="pb-2 font-normal">Tam</th>
+              <th className="pb-2 font-normal">Busto</th>
+              <th className="pb-2 font-normal">Cintura</th>
+              <th className="pb-2 font-normal">Quadril</th>
             </tr>
           </thead>
           <tbody className="tabular-nums">
             {rows.map((r) => (
               <tr key={r[0]} className="border-t border-line">
-                {r.map((c) => (
-                  <td key={c} className="py-2">
+                {r.map((c, i) => (
+                  <td key={`${r[0]}-${i}`} className="py-2.5">
                     {c}
                   </td>
                 ))}
@@ -481,14 +494,12 @@ function SizeGuide() {
           </tbody>
         </table>
         <a
-          href={whatsappUrl(
-            "Olá, Gláucia Sampaio. Tenho dúvida de tamanho e caimento. Podem me ajudar?",
-          )}
+          href={whatsappUrl("Olá, tenho dúvida de tamanho.")}
           target="_blank"
           rel="noreferrer"
-          className="mt-8 flex h-12 items-center justify-center rounded-pill bg-ink text-[11px] tracking-[0.18em] text-paper uppercase"
+          className="mt-6 block text-center text-[11px] tracking-[0.2em] uppercase underline"
         >
-          WhatsApp · personal shopper
+          Personal shopper
         </a>
       </div>
     </aside>

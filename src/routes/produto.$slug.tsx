@@ -234,7 +234,14 @@ function ProductPage() {
       <div className="shrink-0 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
         <p className="text-[10px] tracking-[0.22em] uppercase">{p.brand}</p>
         <div className="mt-0.5 flex items-baseline justify-between gap-3 text-[11px] tracking-[0.14em] uppercase">
-          <button type="button" onClick={() => setSizeOpen(true)} className="truncate text-left">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.setTimeout(() => setSizeOpen(true), 50);
+            }}
+            className="truncate text-left"
+          >
             {p.shortName} ?
           </button>
           <span className="shrink-0 tabular-nums">{formatBRL(matched?.price ?? p.price)}</span>
@@ -284,7 +291,10 @@ function ProductPage() {
           })}
           <button
             type="button"
-            onClick={() => setSizeOpen(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              window.setTimeout(() => setSizeOpen(true), 50);
+            }}
             className="grid h-11 w-11 place-items-center text-[10px] tracking-[0.18em] text-muted"
             aria-label="Guia de medidas"
           >
