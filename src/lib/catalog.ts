@@ -1,6 +1,6 @@
 import seed from "../data/shopify-catalog.json";
 import compositionMap from "../data/composition.json";
-import { sizeOnHand } from "./inventory";
+import { hydrateInventory, sizeOnHand, stockFromVariants } from "./inventory";
 
 export type Size = "PP" | "P" | "M" | "G" | "GG";
 
@@ -924,8 +924,9 @@ hydrateFromShopify(
 
 export async function loadLiveCatalog() {
   const items: Product[] = [];
-  for (let page = 1; page <= 12; page += 1) {
-    const res = await fetch(`https://glaucia-sampaio-3.myshopify.com/products.json?limit=50&page=${page}`, {
+  const stock: ReturnType<typeof stockFromVariants>[] = [];
+  for (let page = 1; page <= 8; page += 1) {
+    const res = await fetch(`https://glaucia-sampaio-3.myshopify.com/products.json?limit=250&page=${page}`, {
       headers: { Accept: "application/json" },
     });
     if (!res.ok) break;
@@ -938,7 +939,13 @@ export async function loadLiveCatalog() {
         product_type?: string;
         tags?: string[] | string;
         images?: Array<{ src: string } | string>;
-        variants?: Array<{ price: string; compare_at_price?: string | null }>;
+        variants?: Array<{
+          price: string;
+          compare_at_price?: string | null;
+          option1?: string | null;
+          option2?: string | null;
+          available?: boolean;
+        }>;
       }>;
     };
     const batch = json.products ?? [];
@@ -965,8 +972,10 @@ export async function loadLiveCatalog() {
           occasions: inferOccasions(tags, raw.product_type ?? "", raw.title),
         }),
       );
+      if (raw.variants?.length) stock.push(stockFromVariants(raw.handle, raw.variants));
     }
   }
+  if (stock.length) hydrateInventory(stock);
   if (items.length) hydrateFromShopify(items);
   return items;
 }
