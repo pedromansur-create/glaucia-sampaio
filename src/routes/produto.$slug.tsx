@@ -45,8 +45,10 @@ function ProductPage() {
   const setSizeOpen = useShop((s) => s.setSizeOpen);
   const zoom = useShop((s) => s.zoom);
   const store = useShop((s) => s.shopifyStore);
+  const herSize = useShop((s) => s.herSize);
+  const rememberSize = useShop((s) => s.rememberSize);
   const [colorId, setColorId] = useState(p?.colors[0]?.id ?? "");
-  const [size, setSize] = useState("");
+  const [size, setSize] = useState(herSize || "");
   const [shot, setShot] = useState(0);
   const [added, setAdded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -57,7 +59,7 @@ function ProductPage() {
 
   useEffect(() => {
     setColorId(p?.colors[0]?.id ?? "");
-    setSize("");
+    setSize(herSize || "");
     setShot(0);
     setAdded(false);
     setInfo(false);
@@ -227,7 +229,10 @@ function ProductPage() {
                 key={s}
                 type="button"
                 disabled={!available}
-                onClick={() => setSize(s)}
+                onClick={() => {
+                  setSize(s);
+                  rememberSize(s);
+                }}
                 className={`uppercase ${s === size ? "underline" : "opacity-30"} ${!available ? "line-through" : ""} disabled:opacity-20`}
               >
                 {s}

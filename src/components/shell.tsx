@@ -26,6 +26,10 @@ export function Shell({ children }: { children: ReactNode }) {
   const takeover = pathname.startsWith("/produto");
   useEffect(() => {
     let alive = true;
+    if (!useShop.getState().herSize && typeof document !== "undefined") {
+      const hit = document.cookie.match(/(?:^|; )gs-size=([^;]+)/);
+      if (hit?.[1]) useShop.getState().rememberSize(decodeURIComponent(hit[1]));
+    }
     loadLiveCatalog().catch(() => {});
     listShopifyCatalog()
       .then((items) => {
@@ -368,6 +372,7 @@ function NavMenu() {
             Trocas
           </Link>
         </nav>
+        <SizeMemory />
         <div className="mt-10 min-h-0 flex-1 overflow-y-auto pb-10">
           <div className="grid grid-cols-2 gap-1">
             {allProducts().map((p) => (
@@ -633,5 +638,32 @@ export function ProductCard({
         </div>
       </Link>
     </article>
+  );
+}
+
+function SizeMemory() {
+  const herSize = useShop((s) => s.herSize);
+  const rememberSize = useShop((s) => s.rememberSize);
+  return (
+    <div className="mt-10">
+      <p className="text-[10px] tracking-[0.2em] text-subtle uppercase">Seu tamanho</p>
+      <div className="mt-3 flex flex-wrap gap-5 text-[13px] tracking-[0.2em]">
+        {["PP", "P", "M", "G", "GG"].map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => rememberSize(s)}
+            className={s === herSize ? "underline" : "opacity-30"}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+      {herSize ? (
+        <p className="mt-3 text-[10px] tracking-[0.08em] text-muted">
+          Voltando: o {herSize} já vem marcado.
+        </p>
+      ) : null}
+    </div>
   );
 }

@@ -25,6 +25,7 @@ type ShopState = {
   introSeen: boolean;
   shopifyStore: string;
   zoom: number;
+  herSize: string;
   add: (item: CartItem) => void;
   remove: (key: string) => void;
   setQty: (key: string, qty: number) => void;
@@ -39,6 +40,7 @@ type ShopState = {
   markIntro: () => void;
   setShopifyStore: (host: string) => void;
   cycleZoom: () => void;
+  rememberSize: (size: string) => void;
   clearCart: () => void;
 };
 
@@ -61,6 +63,7 @@ export const useShop = create<ShopState>()(
       introSeen: false,
       shopifyStore: DEFAULT_SHOPIFY_STORE,
       zoom: 1,
+      herSize: "",
       add: (item) => {
         const key = itemKey(item);
         const cart = [...get().cart];
@@ -68,9 +71,13 @@ export const useShop = create<ShopState>()(
         if (i >= 0) cart[i] = { ...cart[i], qty: cart[i].qty + item.qty };
         else cart.push(item);
         const first = !get().welcomeUsed;
+        if (typeof document !== "undefined" && item.size) {
+          document.cookie = `gs-size=${encodeURIComponent(item.size)};path=/;max-age=31536000;samesite=lax`;
+        }
         set({
           cart,
           cartOpen: true,
+          herSize: item.size || get().herSize,
           welcomeApplied: first ? true : get().welcomeApplied,
           welcomeUnlocked: first ? true : get().welcomeUnlocked,
         });
@@ -97,6 +104,12 @@ export const useShop = create<ShopState>()(
       markIntro: () => set({ introSeen: true }),
       setShopifyStore: (host) => set({ shopifyStore: host }),
       cycleZoom: () => set((s) => ({ zoom: s.zoom >= 1.65 ? 1 : Number((s.zoom + 0.32).toFixed(2)) })),
+      rememberSize: (size) => {
+        if (typeof document !== "undefined" && size) {
+          document.cookie = `gs-size=${encodeURIComponent(size)};path=/;max-age=31536000;samesite=lax`;
+        }
+        set({ herSize: size });
+      },
       clearCart: () => set({ cart: [], welcomeApplied: false, welcomeUsed: true }),
     }),
     {
@@ -109,6 +122,7 @@ export const useShop = create<ShopState>()(
         welcomeUsed: s.welcomeUsed,
         introSeen: s.introSeen,
         shopifyStore: s.shopifyStore,
+        herSize: s.herSize,
       }),
     },
   ),
