@@ -4,7 +4,7 @@ async function ping(url: string, timeout = 6000) {
   const t = Date.now();
   try {
     const r = await fetch(url, { signal: AbortSignal.timeout(timeout), headers: { Accept: "application/json" } });
-    return { ok: r.ok, ms: Date.now() - t, status: r.status };
+    return { ok: r.ok || (r.status > 0 && r.status < 500), ms: Date.now() - t, status: r.status };
   } catch (e) {
     return { ok: false, ms: Date.now() - t, error: String((e as Error).message || e) };
   }
