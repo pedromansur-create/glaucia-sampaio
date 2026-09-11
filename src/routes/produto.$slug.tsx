@@ -100,9 +100,14 @@ function ProductPage() {
 
   if (!p) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-white">
-        <div className="flex items-center justify-between px-3 pt-[max(0.4rem,env(safe-area-inset-top))]">
-          <button type="button" onClick={() => navigate({ to: "/" })} className="grid size-11 place-items-center text-lg" aria-label="Fechar">
+      <div className="fixed inset-0 z-[80] flex flex-col bg-white">
+        <div className="relative z-10 flex items-center justify-between px-3 pt-[max(0.4rem,env(safe-area-inset-top))]">
+          <button
+            type="button"
+            onClick={close}
+            className="relative z-10 grid size-11 place-items-center text-lg"
+            aria-label="Fechar"
+          >
             ×
           </button>
         </div>
@@ -160,26 +165,51 @@ function ProductPage() {
     }
   };
 
-  const close = () => navigate({ to: "/colecao/$slug", params: { slug: "novidades" } });
+  const close = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    navigate({ to: "/" });
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex h-dvh flex-col overflow-hidden bg-white">
+    <div className="fixed inset-0 z-[80] flex h-dvh flex-col overflow-hidden bg-white">
       <h1 className="sr-only">
         {p.brand} {p.name}
       </h1>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(p)) }} />
-      <div className="flex shrink-0 items-center justify-between px-3 pt-[max(0.25rem,env(safe-area-inset-top))]">
-        <button type="button" onClick={close} className="grid size-11 place-items-center text-lg" aria-label="Fechar">
+      <div className="relative z-10 flex shrink-0 items-center justify-between px-3 pt-[max(0.25rem,env(safe-area-inset-top))]">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            close();
+          }}
+          className="relative z-10 grid size-11 place-items-center text-lg"
+          aria-label="Fechar"
+        >
           ×
         </button>
         <div className="flex items-center">
-          <button type="button" onClick={cycleZoom} className="grid size-11 place-items-center text-lg" aria-label="Zoom">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              cycleZoom();
+            }}
+            className="relative z-10 grid size-11 place-items-center text-lg"
+            aria-label="Zoom"
+          >
             +
           </button>
           <button
             type="button"
-            onClick={() => setCartOpen(true)}
-            className="relative grid size-11 place-items-center text-xs tracking-widest"
+            onClick={(e) => {
+              e.stopPropagation();
+              setCartOpen(true);
+            }}
+            className="relative z-10 grid size-11 place-items-center text-xs tracking-widest"
             aria-label="Sacola"
           >
             {count || ""}

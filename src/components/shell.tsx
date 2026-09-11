@@ -48,8 +48,8 @@ export function Shell({ children }: { children: ReactNode }) {
       <main>{children}</main>
       {!takeover ? <LegalBar /> : null}
       <CartDrawer />
-      <NavMenu />
-      <SearchPanel />
+      {!takeover && <NavMenu />}
+      {!takeover && <SearchPanel />}
       <SizeGuide />
       {!takeover && <IosInstallSheet />}
     </div>
@@ -185,7 +185,7 @@ function CartDrawer() {
   return (
     <aside
       className={cn(
-        "fixed inset-0 z-[60] transition-[visibility] duration-300",
+        "fixed inset-0 z-[90] transition-[visibility] duration-300",
         open ? "visible pointer-events-auto" : "invisible pointer-events-none",
       )}
     >
