@@ -300,13 +300,12 @@ function CartDrawer() {
           <Link
             to="/checkout"
             onClick={() => setOpen(false)}
-            data-cursor="on"
             className={cn(
-              "mt-3 flex h-12 items-center justify-center rounded-pill border border-line text-xs tracking-[0.22em] uppercase",
+              "mt-3 flex h-12 items-center justify-center text-[11px] tracking-[0.22em] uppercase",
               cart.length === 0 && "pointer-events-none opacity-40",
             )}
           >
-            Checkout ateliê
+            Checkout
           </Link>
         </div>
       </div>
