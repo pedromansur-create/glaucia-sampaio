@@ -216,19 +216,47 @@ function ProductPage() {
         </div>
       </div>
 
-      <button
-        type="button"
-        className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden"
-        onClick={() => setShot((n) => (n + 1) % shots.length)}
-        aria-label="Próxima foto"
-      >
-        <img
-          src={shots[shot]}
-          alt={p.name}
-          className="max-h-full max-w-[min(92vw,720px)] object-contain transition-transform duration-300"
-          style={{ transform: `scale(${zoom})` }}
-        />
-      </button>
+      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+        <button
+          type="button"
+          className="flex h-full w-full items-center justify-center"
+          onClick={() => setShot((n) => (n + 1) % shots.length)}
+          aria-label="Próxima foto"
+        >
+          <img
+            src={shots[shot]}
+            alt={p.name}
+            className="max-h-full max-w-[min(92vw,720px)] object-contain transition-transform duration-300"
+            style={{ transform: `scale(${zoom})` }}
+          />
+        </button>
+        {shots.length > 1 ? (
+          <>
+            <button
+              type="button"
+              aria-label="Foto anterior"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShot((n) => (n - 1 + shots.length) % shots.length);
+              }}
+              className="absolute left-2 top-1/2 z-10 grid size-10 -translate-y-1/2 place-items-center text-[22px] leading-none text-ink/55"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              aria-label="Próxima foto"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShot((n) => (n + 1) % shots.length);
+              }}
+              className="absolute right-2 top-1/2 z-10 grid size-10 -translate-y-1/2 place-items-center text-[22px] leading-none text-ink/55"
+            >
+              ›
+            </button>
+          </>
+        ) : null}
+      </div>
 
       <div className="shrink-0 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
         <p className="text-[10px] tracking-[0.22em] uppercase">{p.brand}</p>
