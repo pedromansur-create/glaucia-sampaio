@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useSyncExternalStore } from "react";
 import { ProductCard } from "@/components/shell";
-import { allProducts } from "@/lib/catalog";
+import { allProducts, catalogStamp, subscribeCatalog } from "@/lib/catalog";
 import { DEFAULT_DESC, DEFAULT_TITLE, collectionJsonLd, jsonLdScript, pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
@@ -9,6 +10,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  useSyncExternalStore(subscribeCatalog, catalogStamp, catalogStamp);
   const pool = allProducts();
   return (
     <div className="px-1 pb-16 pt-2 md:px-2">

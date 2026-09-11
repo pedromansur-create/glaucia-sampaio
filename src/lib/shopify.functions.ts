@@ -120,6 +120,7 @@ function mapCatalogProduct(raw: RawProduct): Product {
   const title = raw.title.replace(/\s+COLE[CÇ][AÃ]O.*$/i, "").trim();
   const season = seasonOf(handle, tags, raw.title);
   const isVerao27 = season === "Verão 27";
+  const hay = `${handle} ${tags.join(" ")} ${raw.title}`.toLowerCase();
   return {
     id: String(raw.id ?? handle),
     slug,
@@ -138,7 +139,7 @@ function mapCatalogProduct(raw: RawProduct): Product {
     stretch: false,
     fit: "Cai verdadeiro ao tamanho. Em dúvida, a shopper responde no WhatsApp.",
     modelNote: "",
-    isNew: isVerao27,
+    isNew: isVerao27 || /inverno-26|novidade/i.test(hay),
     description: title,
     sku: v0?.sku || handle,
     shopifyHandle: handle,

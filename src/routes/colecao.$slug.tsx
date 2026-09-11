@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { ProductCard } from "@/components/shell";
-import { collections, productsForCollection } from "@/lib/catalog";
+import { catalogStamp, collections, productsForCollection, subscribeCatalog } from "@/lib/catalog";
 import { collectionJsonLd, jsonLdScript, pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/colecao/$slug")({
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/colecao/$slug")({
 });
 
 function CollectionPage() {
+  useSyncExternalStore(subscribeCatalog, catalogStamp, catalogStamp);
   const { slug } = Route.useParams();
   const col = collections.find((c) => c.slug === slug);
   const list = productsForCollection(slug);

@@ -644,7 +644,14 @@ export const muses: Muse[] = [
 ];
 
 export const collections = [
-  { slug: "novidades", title: "Novidades", filter: (p: Product) => Boolean(p.isNew) },
+  {
+    slug: "novidades",
+    title: "Novidades",
+    filter: (p: Product) =>
+      Boolean(p.isNew) ||
+      p.collection === "Verão 27" ||
+      /verao-27|verão 27|inverno-26/i.test(`${p.slug} ${p.shopifyHandle ?? ""} ${p.name} ${p.collection}`),
+  },
   { slug: "verao-27", title: "Verão 27", filter: (p: Product) => p.collection === "Verão 27" },
   { slug: "vestidos", title: "Vestidos", filter: (p: Product) => p.category === "vestido" },
   { slug: "conjuntos", title: "Conjuntos", filter: (p: Product) => p.category === "conjunto" },
@@ -660,6 +667,22 @@ export const collections = [
 ];
 
 let hydrated: Product[] | null = null;
+let catalogVersion = 0;
+const catalogListeners = new Set<() => void>();
+
+export function subscribeCatalog(fn: () => void) {
+  catalogListeners.add(fn);
+  return () => catalogListeners.delete(fn);
+}
+
+export function catalogStamp() {
+  return catalogVersion;
+}
+
+function bumpCatalog() {
+  catalogVersion += 1;
+  catalogListeners.forEach((fn) => fn());
+}
 
 function categoryFromType(type: string): Product["category"] {
   const t = type.toLowerCase();
@@ -709,7 +732,7 @@ function productFromSeed(raw: {
     stretch: false,
     fit: "Cai verdadeiro ao tamanho. Em dúvida, a shopper responde no WhatsApp.",
     modelNote: "",
-    isNew: isVerao27,
+    isNew: isVerao27 || hay.includes("inverno-26") || hay.includes("novidade"),
     description: title,
     sku: raw.handle,
     shopifyHandle: raw.handle,
@@ -743,6 +766,7 @@ export function hydrateFromShopify(items: Product[]) {
     if (![...seen].some((s) => s.includes(p.slug)) && !seen.has(p.slug)) merged.push(p);
   }
   hydrated = merged;
+  bumpCatalog();
 }
 
 export function allProducts() {
