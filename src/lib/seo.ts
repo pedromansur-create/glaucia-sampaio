@@ -94,6 +94,13 @@ export function productJsonLd(p: Product) {
     category: p.category,
     url,
     countryOfOrigin: "BR",
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: `${p.name} ${p.brand}`, item: url },
+      ],
+    },
     audience: { "@type": "PeopleAudience", suggestedGender: "female", geographicArea: "BR" },
     keywords: [p.brand, ...p.occasions, p.fabric, "Uberlândia", "vestido festa"].filter(Boolean).join(", "),
     offers: {
@@ -121,12 +128,20 @@ export function productJsonLd(p: Product) {
 }
 
 export function collectionJsonLd(title: string, path: string, products: Product[]) {
+  const url = absUrl(path);
   return {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: title,
-    url: absUrl(path),
+    url,
     isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL },
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: title, item: url },
+      ],
+    },
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: products.length,

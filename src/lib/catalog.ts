@@ -665,6 +665,22 @@ export const collections = [
   { slug: "zen", title: "Zen", filter: (p: Product) => /zen/i.test(p.brand) },
   { slug: "skazi", title: "Skazi", filter: (p: Product) => /skazi/i.test(p.brand) },
   { slug: "arquivo", title: "Sale", filter: (p: Product) => Boolean(p.compareAt && p.compareAt > p.price) },
+  { slug: "sale", title: "Sale", filter: (p: Product) => Boolean(p.compareAt && p.compareAt > p.price) },
+  {
+    slug: "casamento",
+    title: "Casamento",
+    filter: (p: Product) => p.occasions.includes("madrinhas") || p.occasions.includes("casamento-dia"),
+  },
+  {
+    slug: "noite",
+    title: "Noite",
+    filter: (p: Product) => p.occasions.includes("eventos-noturnos"),
+  },
+  {
+    slug: "all-white",
+    title: "All White",
+    filter: (p: Product) => p.occasions.includes("all-white"),
+  },
 ];
 
 let hydrated: Product[] | null = null;
