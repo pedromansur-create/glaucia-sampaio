@@ -2,7 +2,7 @@ import { sizeOnHand } from "./inventory";
 import { WELCOME_CODE } from "./catalog";
 export { WELCOME_CODE };
 
-export const DEFAULT_SHOPIFY_STORE = "www.glauciasampaio.com.br";
+export const DEFAULT_SHOPIFY_STORE = "glaucia-sampaio-3.myshopify.com";
 export const SHOPIFY_SHOP = "glaucia-sampaio-3";
 export const SHOPIFY_ADMIN = "https://admin.shopify.com/store/glaucia-sampaio-3";
 

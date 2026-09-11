@@ -838,7 +838,7 @@ hydrateFromShopify(
 export async function loadLiveCatalog() {
   const items: Product[] = [];
   for (let page = 1; page <= 12; page += 1) {
-    const res = await fetch(`https://www.glauciasampaio.com.br/products.json?limit=50&page=${page}`, {
+    const res = await fetch(`https://glaucia-sampaio-3.myshopify.com/products.json?limit=50&page=${page}`, {
       headers: { Accept: "application/json" },
     });
     if (!res.ok) break;
