@@ -684,6 +684,27 @@ function bumpCatalog() {
   catalogListeners.forEach((fn) => fn());
 }
 
+function fold(s: string) {
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+export function inferOccasions(tags: string[], type: string, title: string): string[] {
+  const hay = fold(`${tags.join(" ")} ${type} ${title}`);
+  const o = new Set<string>();
+  if (/madrinha|casamento|civil/.test(hay)) o.add("madrinhas");
+  if (/midi|longo/.test(hay)) {
+    o.add("madrinhas");
+    o.add("casamento-dia");
+  }
+  if (/off[-\s]?white|all white|branco|marfim|nude|cru|palha|bege|champagne|offwhite|ivory/.test(hay)) {
+    o.add("all-white");
+  }
+  if (/praia|al mare|biquini|maio|saida|linho|resort/.test(hay)) o.add("resort");
+  if (/blazer|camisa|alfaiat|workwear/.test(hay)) o.add("workwear");
+  if (/longo|paete|festa|gala|noite|brilho|tule|bordado/.test(hay)) o.add("eventos-noturnos");
+  return [...o];
+}
+
 function categoryFromType(type: string): Product["category"] {
   const t = type.toLowerCase();
   if (t.includes("calça") || t.includes("calca") || t.includes("jeans")) return "calca";
@@ -722,7 +743,7 @@ function productFromSeed(raw: {
     sizes: ALL_SIZES,
     images: raw.images.length ? raw.images : ["/looks/hero-portrait.jpg"],
     category: categoryFromType(raw.type),
-    occasions: raw.occasions ?? [],
+    occasions: Array.from(new Set([...(raw.occasions ?? []), ...inferOccasions(raw.tags, raw.type, raw.title)])),
     collection: isVerao27 ? "Verão 27" : hay.includes("al-mare") ? "Al Mare" : "Casa",
     fabric: raw.type || "Tecido da coleção",
     composition:
@@ -783,7 +804,19 @@ export function getProduct(slug: string) {
 }
 
 export function productsForOccasion(slug: string) {
-  return allProducts().filter((p) => p.occasions.includes(slug));
+  const pool = allProducts();
+  const tagged = pool.filter((p) => p.occasions.includes(slug));
+  if (tagged.length >= 6) return tagged;
+  const extra = pool.filter((p) => {
+    if (tagged.includes(p)) return false;
+    return inferOccasions([], p.fabric, `${p.name} ${p.shortName} ${p.brand}`).includes(slug);
+  });
+  const list = [...tagged, ...extra];
+  if (list.length) return list;
+  if (slug === "all-white") {
+    return pool.filter((p) => /branco|white|off|nude|cru|marfim|bege|ivory/i.test(`${p.name} ${p.shortName}`));
+  }
+  return pool.filter((p) => p.category === "vestido");
 }
 
 export function productsForCollection(slug: string) {
@@ -875,7 +908,7 @@ export async function loadLiveCatalog() {
             ? Number.parseFloat(String(raw.variants[0].compare_at_price))
             : null,
           images,
-          occasions: [],
+          occasions: inferOccasions(tags, raw.product_type ?? "", raw.title),
         }),
       );
     }

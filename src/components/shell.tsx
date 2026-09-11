@@ -1,16 +1,16 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import {
   BOUTIQUE,
   FREE_SHIPPING_FROM,
   INSTAGRAM,
   WELCOME_CODE,
-  collections,
-  getProduct,
   allProducts,
-  occasions,
+  catalogStamp,
+  getProduct,
   searchProducts,
+  subscribeCatalog,
   whatsappUrl,
 } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
@@ -327,6 +327,7 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
 }
 
 function NavMenu() {
+  useSyncExternalStore(subscribeCatalog, catalogStamp, catalogStamp);
   const open = useShop((s) => s.menuOpen);
   const setOpen = useShop((s) => s.setMenuOpen);
   const close = () => setOpen(false);

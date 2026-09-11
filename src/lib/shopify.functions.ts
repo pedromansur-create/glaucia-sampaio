@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { SIZES, type Product } from "./catalog";
+import { inferOccasions, SIZES, type Product } from "./catalog";
 import {
   DEFAULT_SHOPIFY_STORE,
   SHOPIFY_SLUG_BY_HANDLE,
@@ -78,19 +78,6 @@ function categoryOf(type: string): Product["category"] {
   return "vestido";
 }
 
-function occasionsOf(tags: string[], type: string, title: string): string[] {
-  const hay = `${tags.join(" ")} ${type} ${title}`.toLowerCase();
-  const o: string[] = [];
-  if (hay.includes("madrinha")) o.push("madrinhas");
-  if (/\boff[- ]?white\b|\ball white\b/.test(hay) || hay.includes("off white")) o.push("all-white");
-  if (hay.includes("praia") || hay.includes("al mare") || hay.includes("biquini") || hay.includes("maiô") || hay.includes("saida"))
-    o.push("resort");
-  if (hay.includes("blazer") || hay.includes("camisa") || hay.includes("alfaiat") || hay.includes("workwear")) o.push("workwear");
-  if (hay.includes("longo") || hay.includes("paete") || hay.includes("paetê") || hay.includes("festa")) o.push("eventos-noturnos");
-  if (hay.includes("midi") || hay.includes("civil")) o.push("casamento-dia");
-  return o;
-}
-
 function seasonOf(handle: string, tags: string[], title: string) {
   const hay = `${handle} ${tags.join(" ")} ${title}`.toLowerCase();
   if (hay.includes("verao-27") || hay.includes("verão 27") || hay.includes("verao 27")) return "Verão 27";
@@ -133,7 +120,7 @@ function mapCatalogProduct(raw: RawProduct): Product {
     sizes: [...SIZES],
     images: images.length ? images : ["/looks/hero-portrait.jpg"],
     category: categoryOf(raw.product_type ?? ""),
-    occasions: occasionsOf(tags, raw.product_type ?? "", title),
+    occasions: inferOccasions(tags, raw.product_type ?? "", title),
     collection: season,
     fabric: raw.product_type || "Tecido da coleção",
     stretch: false,
