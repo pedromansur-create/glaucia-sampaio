@@ -163,12 +163,12 @@ function ProductPage() {
   const close = () => navigate({ to: "/colecao/$slug", params: { slug: "novidades" } });
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white">
+    <div className="fixed inset-0 z-50 flex h-dvh flex-col overflow-hidden bg-white">
       <h1 className="sr-only">
         {p.brand} {p.name}
       </h1>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(p)) }} />
-      <div className="flex items-center justify-between px-3 pt-[max(0.4rem,env(safe-area-inset-top))]">
+      <div className="flex shrink-0 items-center justify-between px-3 pt-[max(0.25rem,env(safe-area-inset-top))]">
         <button type="button" onClick={close} className="grid size-11 place-items-center text-lg" aria-label="Fechar">
           ×
         </button>
@@ -201,31 +201,26 @@ function ProductPage() {
         />
       </button>
 
-      {info && (
-        <p className="px-6 pb-2 text-center text-[11px] leading-relaxed tracking-[0.08em] text-muted">
-          {p.brand} · {p.fabric}
-          <br />
-          {p.fit}
-        </p>
-      )}
-
-      <div className="px-4 pb-[max(0.85rem,env(safe-area-inset-bottom))] pt-1">
+      <div className="shrink-0 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
         <p className="text-[10px] tracking-[0.22em] uppercase">{p.brand}</p>
-        <div className="mt-1 flex items-baseline justify-between gap-4 text-[11px] tracking-[0.14em] uppercase">
-          <button type="button" onClick={() => setInfo((v) => !v)} className="text-left">
+        <div className="mt-0.5 flex items-baseline justify-between gap-3 text-[11px] tracking-[0.14em] uppercase">
+          <button type="button" onClick={() => setInfo((v) => !v)} className="truncate text-left">
             {p.shortName} {info ? "–" : "?"}
           </button>
-          <span className="tabular-nums">{formatBRL(matched?.price ?? p.price)}</span>
+          <span className="shrink-0 tabular-nums">{formatBRL(matched?.price ?? p.price)}</span>
         </div>
-        <p className="mt-1 text-[10px] tracking-[0.04em] text-muted">
-          Composição: {p.composition || p.fabric}
-        </p>
-        <p className="mt-1 text-[10px] tracking-[0.08em] text-muted">
-          Frete grátis acima de {formatBRL(FREE_SHIPPING_FROM)} · 10% na primeira
-        </p>
+        {info ? (
+          <p className="mt-1 text-[10px] leading-snug tracking-[0.04em] text-muted">
+            {p.composition || p.fabric}. Frete grátis acima de {formatBRL(FREE_SHIPPING_FROM)}.
+          </p>
+        ) : (
+          <p className="mt-1 truncate text-[10px] tracking-[0.04em] text-muted">
+            {p.composition || p.fabric}
+          </p>
+        )}
 
         {liveColors.length > 1 && (
-          <div className="mt-3 flex justify-center gap-5 text-[11px] tracking-[0.16em] uppercase">
+          <div className="mt-2 flex justify-center gap-5 text-[11px] tracking-[0.16em] uppercase">
             {liveColors.map((name) => (
               <button
                 key={name}
@@ -239,7 +234,7 @@ function ProductPage() {
           </div>
         )}
 
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] tracking-[0.2em]">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 text-[13px] tracking-[0.2em]">
           {liveSizes.map((s) => {
             const available = !live || isSizeAvailable(live, s, selectedColorName);
             return (
@@ -251,26 +246,27 @@ function ProductPage() {
                   setSize(s);
                   rememberSize(s);
                 }}
-                className={`uppercase ${s === size ? "underline" : "opacity-30"} ${!available ? "line-through" : ""} disabled:opacity-20`}
+                className={`grid h-11 min-w-8 place-items-center uppercase ${s === size ? "underline" : "opacity-30"} ${!available ? "line-through" : ""} disabled:opacity-20`}
               >
                 {s}
               </button>
             );
           })}
+          <button
+            type="button"
+            onClick={() => setSizeOpen(true)}
+            className="grid h-11 w-11 place-items-center text-[10px] tracking-[0.18em] text-subtle"
+            aria-label="Guia de medidas"
+          >
+            ?
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setSizeOpen(true)}
-          className="mt-2 block w-full text-center text-[10px] tracking-[0.18em] text-subtle uppercase"
-        >
-          Guia de medidas
-        </button>
 
         <button
           type="button"
           disabled={busy || !size || Boolean(live && !isSizeAvailable(live, size, selectedColorName)) || (live && !live.available)}
           onClick={() => void addToBag()}
-          className="mt-3 flex h-11 w-full items-center justify-center text-[11px] tracking-[0.4em] uppercase disabled:opacity-25"
+          className="mt-1 flex h-11 w-full items-center justify-center text-[11px] tracking-[0.4em] uppercase disabled:opacity-25"
         >
           {busy
             ? "…"
@@ -280,24 +276,21 @@ function ProductPage() {
                 ? "ESGOTADO"
                 : "ADD"}
         </button>
-        <p className="mt-2 text-center text-[10px] tracking-[0.12em] text-muted uppercase">
-          {p.preorder ? `Pré-venda · envio ${p.preorder.shipsFrom}` : "Sai em 2 dias úteis"} · PIX
-        </p>
-        <p className="mt-1 text-center text-[9px] tracking-[0.1em] text-subtle">
-          {BOUTIQUE.cnpj} ·{" "}
+        <p className="mt-1 text-center text-[9px] tracking-[0.12em] text-subtle uppercase">
+          {p.preorder ? `Pré-venda ${p.preorder.shipsFrom}` : "2 dias úteis"} · PIX ·{" "}
           <Link to="/trocas" className="underline">
-            7 dias para desistir
-          </Link>{" "}
-          · Correios
+            7 dias
+          </Link>
+          {" · "}
+          <a
+            href={whatsappUrl(`Olá, quero a personal shopper para o ${p.name} (${p.brand}). Uso ${size || "—"}.`)}
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            Shopper
+          </a>
         </p>
-        <a
-          href={whatsappUrl(`Olá, quero a personal shopper para o ${p.name} (${p.brand}). Uso ${size || "—"}.`)}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-1 block text-center text-[10px] tracking-[0.22em] text-subtle uppercase"
-        >
-          Personal shopper
-        </a>
       </div>
     </div>
   );
