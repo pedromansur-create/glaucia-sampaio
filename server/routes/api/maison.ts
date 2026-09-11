@@ -22,9 +22,12 @@ export default defineEventHandler(async (event) => {
   }
   const body = await readBody(event);
   const kind = body?.kind === "anuncio" ? "anuncio" : "recado";
+  const key = process.env.MAISON_KEY?.trim();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (key) headers["x-maison-key"] = key;
   const r = await fetch(`${url.replace(/\/$/, "")}/${kind}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body ?? {}),
     signal: AbortSignal.timeout(45000),
   });

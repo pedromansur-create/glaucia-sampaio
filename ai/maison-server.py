@@ -10,7 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 OLLAMA = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/")
 MODEL = os.environ.get("MAISON_MODEL", "gs-maison")
-PORT = int(os.environ.get("PORT", "8787"))
+KEY = os.environ.get("MAISON_KEY", "").strip()
 
 SYSTEM = """Você é a voz da boutique Gláucia Sampaio, Uberlândia.
 Escreve recados de WhatsApp para a Lucy mandar à cliente.
@@ -106,7 +106,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, x-maison-key")
         self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
         self.send_header("Content-Length", str(len(raw)))
         self.end_headers()
@@ -128,6 +128,9 @@ class Handler(BaseHTTPRequestHandler):
             self._send(503, {"ok": False, "error": "ollama offline"})
 
     def do_POST(self) -> None:
+        if KEY and self.headers.get("x-maison-key") != KEY:
+            self._send(401, {"ok": False, "error": "key"})
+            return
         n = int(self.headers.get("Content-Length") or 0)
         try:
             body = json.loads(self.rfile.read(n) or b"{}")
