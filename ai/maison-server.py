@@ -9,7 +9,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 OLLAMA = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/")
-MODEL = os.environ.get("MAISON_MODEL", "qwen3.5:9b")
+MODEL = os.environ.get("MAISON_MODEL", "gs-maison")
 PORT = int(os.environ.get("PORT", "8787"))
 
 SYSTEM = """Você é a voz da boutique Gláucia Sampaio, Uberlândia.
@@ -55,20 +55,31 @@ def ollama_json(path: str, payload: dict | None = None, timeout: int = 60) -> di
 
 
 def chat(system: str, prompt: str) -> str:
-    data = ollama_json(
-        "/api/chat",
-        {
-            "model": MODEL,
-            "stream": False,
-            "options": {"temperature": 0.3, "num_ctx": 2048},
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": prompt},
-            ],
-        },
-        timeout=90,
-    )
-    return str((data.get("message") or {}).get("content") or "").strip()
+    models = [MODEL]
+    if MODEL != "qwen3.5:9b":
+        models.append("qwen3.5:9b")
+    last = None
+    for name in models:
+        try:
+            data = ollama_json(
+                "/api/chat",
+                {
+                    "model": name,
+                    "stream": False,
+                    "think": False,
+                    "keep_alive": "24h",
+                    "options": {"temperature": 0.3, "num_ctx": 2048, "num_predict": 280, "top_p": 0.8},
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": prompt},
+                    ],
+                },
+                timeout=90,
+            )
+            return str((data.get("message") or {}).get("content") or "").strip()
+        except Exception as e:
+            last = e
+    raise last or RuntimeError("ollama")
 
 
 def catalog_prompt(body: dict, extra: str) -> str:

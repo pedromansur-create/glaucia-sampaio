@@ -13,9 +13,10 @@ open -a Ollama 2>/dev/null || (ollama serve >/tmp/ollama.log 2>&1 &)
 sleep 3
 
 # 9B Q4 ~6.6 GB. Melhor PT-BR no M4 16 GB. Fallback apertado: llama3.2:3b
-MODEL="${MAISON_MODEL:-qwen3.5:9b}"
-echo "Baixando ${MODEL} (uma vez, alguns minutos)…"
-ollama pull "$MODEL"
+MODEL="${MAISON_MODEL:-gs-maison}"
+echo "Baixando qwen3.5:9b e criando gs-maison…"
+ollama pull qwen3.5:9b
+ollama create gs-maison -f "$(pwd)/Modelfile"
 
 PYTHON="$(command -v python3 || true)"
 if [ -z "$PYTHON" ]; then
