@@ -36,6 +36,12 @@ function Status() {
     caixarcs?: Ping;
     maison?: Ping;
   } | null>(null);
+  const [stock, setStock] = useState<{
+    products?: number;
+    available?: number;
+    unavailable?: number;
+    sku?: number;
+  } | null>(null);
 
   useEffect(() => {
     const load = () => {
@@ -43,6 +49,10 @@ function Status() {
         .then((r) => r.json())
         .then(setData)
         .catch(() => setData({}));
+      fetch("/api/stock")
+        .then((r) => r.json())
+        .then(setStock)
+        .catch(() => {});
     };
     load();
     const id = window.setInterval(load, 20000);
@@ -52,12 +62,18 @@ function Status() {
   return (
     <article className="mx-auto max-w-xl px-6 py-16 text-[14px] leading-[1.85]">
       <h1 className="text-[11px] tracking-[0.32em] text-subtle uppercase">Status</h1>
-      <p className="mt-6 text-muted">Mini, Shopify e CaixaRCS. Atualiza sozinho. Lucy não usa esta página.</p>
+      <p className="mt-6 text-muted">Bling → Shopify → vitrine. Lucy não usa esta página.</p>
       <ul className="mt-12">
         <Row name="Shopify" ping={data?.shopify} />
         <Row name="CaixaRCS" ping={data?.caixarcs} />
         <Row name="Mini · gs-maison" ping={data?.maison} />
       </ul>
+      {stock?.products != null ? (
+        <p className="mt-10 text-muted">
+          Estoque: {stock.products} peças · {stock.available} tamanhos à venda · {stock.unavailable}{" "}
+          esgotados · {stock.sku} SKU
+        </p>
+      ) : null}
       <p className="mt-10 text-[11px] tracking-[0.18em] text-subtle uppercase">{data?.at || "…"}</p>
     </article>
   );

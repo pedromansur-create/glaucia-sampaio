@@ -1,4 +1,3 @@
-import { sizeOnHand } from "./inventory";
 import { WELCOME_CODE } from "./catalog";
 export { WELCOME_CODE };
 
@@ -115,16 +114,13 @@ function colorClose(a: string, b: string) {
 }
 
 export function isSizeAvailable(live: ShopifyProductLive, size: string, color?: string) {
-  const counted = sizeOnHand(live.handle, size, color);
-  if (counted != null && counted > 0) return true;
   const keys = sizeKeys(size);
-  const exists = live.variants.some(
+  return live.variants.some(
     (v) =>
       keys.has(norm(v.size)) &&
+      v.available &&
       (!color || live.colors.length < 2 || colorClose(v.color, color)),
   );
-  if (exists) return counted == null || counted > 0 || live.variants.length > 0;
-  return false;
 }
 
 export function matchShopifyVariant(

@@ -20,7 +20,7 @@ export function stockFromVariants(
   for (const v of variants) {
     const size = String(v.option1 || "").trim() || "U";
     const color = String(v.option2 || "").trim();
-    const qty = 1;
+    const qty = v.available ? 1 : 0;
     lines.push({ size, color, qty });
     sizes[size] = (sizes[size] ?? 0) + qty;
   }
