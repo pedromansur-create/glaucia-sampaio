@@ -817,16 +817,69 @@ export function relatedProducts(product: Product, limit = 4) {
 }
 
 hydrateFromShopify(
-  (seed.products as Array<{
-    id: string;
-    handle: string;
-    title: string;
-    vendor: string;
-    type: string;
-    tags: string[];
-    price: number;
-    compare: number | null;
-    images: string[];
-    occasions: string[];
-  }>).map(productFromSeed),
+  Array.isArray((seed as { products?: unknown }).products)
+    ? (
+        (seed as { products: Array<{
+          id: string;
+          handle: string;
+          title: string;
+          vendor: string;
+          type: string;
+          tags: string[];
+          price: number;
+          compare: number | null;
+          images: string[];
+          occasions: string[];
+        }> }).products
+      ).map(productFromSeed)
+    : [],
 );
+
+export async function loadLiveCatalog() {
+  const items: Product[] = [];
+  for (let page = 1; page <= 12; page += 1) {
+    const res = await fetch(`https://www.glauciasampaio.com.br/products.json?limit=50&page=${page}`, {
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) break;
+    const json = (await res.json()) as {
+      products?: Array<{
+        id: number;
+        handle: string;
+        title: string;
+        vendor?: string;
+        product_type?: string;
+        tags?: string[] | string;
+        images?: Array<{ src: string } | string>;
+        variants?: Array<{ price: string; compare_at_price?: string | null }>;
+      }>;
+    };
+    const batch = json.products ?? [];
+    if (!batch.length) break;
+    for (const raw of batch) {
+      const tags = Array.isArray(raw.tags) ? raw.tags : String(raw.tags ?? "").split(",").map((t) => t.trim());
+      const images = (raw.images ?? [])
+        .map((img) => (typeof img === "string" ? img : img.src))
+        .filter(Boolean)
+        .map((src) => (src.startsWith("//") ? `https:${src}` : src));
+      items.push(
+        productFromSeed({
+          id: String(raw.id),
+          handle: raw.handle,
+          title: raw.title,
+          vendor: raw.vendor ?? "",
+          type: raw.product_type ?? "",
+          tags,
+          price: Number.parseFloat(String(raw.variants?.[0]?.price ?? "0")) || 0,
+          compare: raw.variants?.[0]?.compare_at_price
+            ? Number.parseFloat(String(raw.variants[0].compare_at_price))
+            : null,
+          images,
+          occasions: [],
+        }),
+      );
+    }
+  }
+  if (items.length) hydrateFromShopify(items);
+  return items;
+}

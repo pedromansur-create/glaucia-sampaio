@@ -18,7 +18,7 @@ import { formatBRL } from "@/lib/format";
 import { ShopifyPayButton } from "@/components/ios";
 import { IosInstallSheet } from "@/components/ios";
 import { cartTotals, itemKey, useShop } from "@/lib/store";
-import { hydrateFromShopify } from "@/lib/catalog";
+import { hydrateFromShopify, loadLiveCatalog } from "@/lib/catalog";
 import { listShopifyCatalog } from "@/lib/shopify.functions";
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -26,6 +26,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const takeover = pathname.startsWith("/produto");
   useEffect(() => {
     let alive = true;
+    loadLiveCatalog().catch(() => {});
     listShopifyCatalog()
       .then((items) => {
         if (alive && items?.length) hydrateFromShopify(items);
