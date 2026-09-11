@@ -276,7 +276,7 @@ function ProductPage() {
                 ? "ESGOTADO"
                 : "ADD"}
         </button>
-        <p className="mt-1 text-center text-[9px] tracking-[0.12em] text-muted uppercase">
+        <p className="mt-1 text-center text-[10px] tracking-[0.12em] text-muted uppercase">
           {p.preorder ? `Pré-venda ${p.preorder.shipsFrom}` : "2 dias úteis"} · PIX ·{" "}
           <Link to="/trocas" className="underline">
             7 dias
@@ -288,7 +288,7 @@ function ProductPage() {
             rel="noreferrer"
             className="underline"
           >
-            Shopper
+            Personal shopper
           </a>
         </p>
       </div>
