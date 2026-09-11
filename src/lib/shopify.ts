@@ -1,4 +1,6 @@
+import { sizeOnHand } from "./inventory";
 import { WELCOME_CODE } from "./catalog";
+export { WELCOME_CODE };
 
 export const DEFAULT_SHOPIFY_STORE = "www.glauciasampaio.com.br";
 export const SHOPIFY_SHOP = "glaucia-sampaio-3";
@@ -112,6 +114,8 @@ function colorClose(a: string, b: string) {
 }
 
 export function isSizeAvailable(live: ShopifyProductLive, size: string, color?: string) {
+  const counted = sizeOnHand(live.handle, size, color);
+  if (counted != null) return counted > 0;
   const keys = sizeKeys(size);
   return live.variants.some(
     (v) =>
@@ -157,5 +161,3 @@ export function shopifyCartUrl(
 export function shopifyReadyCount(cart: { variantId?: number }[]) {
   return cart.filter((i) => i.variantId).length;
 }
-
-export { WELCOME_CODE };
