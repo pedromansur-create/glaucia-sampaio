@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Gláucia Sampaio",
+      "hasCanvas": false,
+      "bodyTextLen": 2303,
+      "bodyTextHash": "1d227283a93e3007fedb3d5ec9d6cd206ee9b0360f639c8b997e2a2065ff01aa",
+      "bodyTextPrefix": "FRETE GRÁTIS ACIMA DE R$ 1.000,00 · 10% NA PRIMEIRA COMPRA COM W",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Gláucia Sampaio",
+      "hasCanvas": false,
+      "bodyTextLen": 1819,
+      "bodyTextHash": "d4f759622b045725f568287239e5007b4df36f13c827ffdcd145fc52869d4d24",
+      "bodyTextPrefix": "FRETE GRÁTIS ACIMA DE R$ 1.000,00 · 10% NA PRIMEIRA COMPRA COM W",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

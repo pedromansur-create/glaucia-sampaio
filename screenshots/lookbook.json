@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/lookbook",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Gláucia Sampaio",
+      "hasCanvas": false,
+      "bodyTextLen": 1059,
+      "bodyTextHash": "964d9a3e237d57bc455bfe935ebe00c5e7c2bad9bb59ce9d5bf9185fd4ba5011",
+      "bodyTextPrefix": "FRETE GRÁTIS ACIMA DE R$ 1.000,00 · 10% NA PRIMEIRA COMPRA COM W",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/lookbook.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Gláucia Sampaio",
+      "hasCanvas": false,
+      "bodyTextLen": 512,
+      "bodyTextHash": "49d6e8f01fd2916de4fb8709e7a93e3dbdd5bbc7a085c959ad0bc5a408eda73d",
+      "bodyTextPrefix": "GLÁUCIA SAMPAIO MUSAS As modelos da casa. Helena Marina Camila H",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/lookbook-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/lookbook.json"
+}

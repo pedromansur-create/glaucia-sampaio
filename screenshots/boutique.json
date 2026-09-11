@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/boutique",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Gláucia Sampaio",
+      "hasCanvas": false,
+      "bodyTextLen": 936,
+      "bodyTextHash": "42e5771affbed0270cd5bdab62c929411052628d90281cf580fbbfec3c251326",
+      "bodyTextPrefix": "FRETE GRÁTIS ACIMA DE R$ 1.000,00 · 10% NA PRIMEIRA COMPRA COM W",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/boutique.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Gláucia Sampaio",
+      "hasCanvas": false,
+      "bodyTextLen": 389,
+      "bodyTextHash": "6a27faaa563d682367adecc411cf155f2a09a69f9369e90b194b6686ae2ea2a5",
+      "bodyTextPrefix": "GLÁUCIA SAMPAIO UBERLÂNDIA A casa. Pé-direito alto, cortina de l",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/boutique-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/boutique.json"
+}
