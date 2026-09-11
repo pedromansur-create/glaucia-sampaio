@@ -245,50 +245,52 @@ function ProductPage() {
         onTouchStart={onSwipeStart}
         onTouchEnd={onSwipeEnd}
       >
-        <button
-          type="button"
-          className="flex h-full w-full items-center justify-center touch-manipulation"
-          onClick={() => setShot((n) => (n + 1) % shots.length)}
-          aria-label="Próxima foto"
-        >
-          <img
-            src={shots[shot]}
-            alt={p.name}
-            draggable={false}
-            className="max-h-full max-w-[min(92vw,720px)] select-none object-contain transition-transform duration-300"
-            style={{ transform: `scale(${zoom})` }}
-          />
-        </button>
-        {shots.length > 1 ? (
-          <>
-            <button
-              type="button"
-              aria-label="Foto anterior"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShot((n) => (n - 1 + shots.length) % shots.length);
-              }}
-              className="absolute top-1/2 left-0 z-10 flex h-28 w-12 -translate-y-1/2 items-center justify-center touch-manipulation"
-            >
-              <svg width="12" height="22" viewBox="0 0 12 22" fill="none" aria-hidden>
-                <path d="M11 1 1 11l10 10" stroke="currentColor" strokeWidth="1.25" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              aria-label="Próxima foto"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShot((n) => (n + 1) % shots.length);
-              }}
-              className="absolute top-1/2 right-0 z-10 flex h-28 w-12 -translate-y-1/2 items-center justify-center touch-manipulation"
-            >
-              <svg width="12" height="22" viewBox="0 0 12 22" fill="none" aria-hidden>
-                <path d="M1 1l10 10L1 21" stroke="currentColor" strokeWidth="1.25" />
-              </svg>
-            </button>
-          </>
-        ) : null}
+        <div className="relative mx-auto h-full max-w-[min(92vw,720px)]">
+          <button
+            type="button"
+            className="flex h-full w-full items-center justify-center touch-manipulation"
+            onClick={() => setShot((n) => (n + 1) % shots.length)}
+            aria-label="Próxima foto"
+          >
+            <img
+              src={shots[shot]}
+              alt={p.name}
+              draggable={false}
+              className="max-h-full max-w-full select-none object-contain transition-transform duration-300"
+              style={{ transform: `scale(${zoom})` }}
+            />
+          </button>
+          {shots.length > 1 ? (
+            <>
+              <button
+                type="button"
+                aria-label="Foto anterior"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShot((n) => (n - 1 + shots.length) % shots.length);
+                }}
+                className="absolute top-1/2 left-0 z-10 flex h-12 w-6 -translate-y-1/2 items-center justify-center touch-manipulation"
+              >
+                <svg width="7" height="13" viewBox="0 0 7 13" fill="none" aria-hidden>
+                  <path d="M6.2.6.8 6.5l5.4 5.9" stroke="currentColor" strokeWidth="1.1" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                aria-label="Próxima foto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShot((n) => (n + 1) % shots.length);
+                }}
+                className="absolute top-1/2 right-0 z-10 flex h-12 w-6 -translate-y-1/2 items-center justify-center touch-manipulation"
+              >
+                <svg width="7" height="13" viewBox="0 0 7 13" fill="none" aria-hidden>
+                  <path d="M.8.6l5.4 5.9L.8 12.4" stroke="currentColor" strokeWidth="1.1" />
+                </svg>
+              </button>
+            </>
+          ) : null}
+        </div>
       </div>
 
       <div className="shrink-0 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
