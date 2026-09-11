@@ -66,7 +66,7 @@ function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-bg pt-[max(0.35rem,env(safe-area-inset-top))]">
-      <div className="grid grid-cols-[6.5rem_1fr_6.5rem] items-center px-2 md:grid-cols-[8rem_1fr_8rem]">
+      <div className="grid grid-cols-[auto_1fr_auto] items-center px-2">
         <button
           type="button"
           aria-label="Menu"
