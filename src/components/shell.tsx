@@ -501,8 +501,9 @@ function SizeGuide() {
     ["G", "92–96", "74–78", "100–104"],
     ["GG", "96–102", "78–84", "104–110"],
   ];
+  if (!open) return null;
   return (
-    <aside className={cn("fixed inset-0 z-50 grid place-items-center p-4", open ? "visible" : "invisible")}>
+    <aside className="fixed inset-0 z-[70] grid place-items-center p-4">
       <button
         type="button"
         aria-label="Fechar guia"
@@ -667,17 +668,17 @@ export function ProductCard({
   const zoom = useShop((s) => s.zoom);
   if (!p) return null;
   return (
-    <article className="group relative z-10">
-      <Link to="/produto/$slug" params={{ slug: p.slug }} className="block cursor-pointer" preload="intent">
+    <article className="relative z-10">
+      <a href={`/produto/${p.slug}`} className="block cursor-pointer">
         <div className="aspect-[3/4] overflow-hidden bg-white">
           <img
             src={p.images[0]}
             alt={`${p.brand} ${p.name}`}
-            className="pointer-events-none h-full w-full object-cover object-top transition-transform duration-300"
+            className="h-full w-full object-cover object-top"
             style={{ transform: `scale(${zoom})` }}
           />
         </div>
-      </Link>
+      </a>
     </article>
   );
 }
