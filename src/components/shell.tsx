@@ -155,9 +155,17 @@ function LegalBar() {
       <p className="text-[10px] tracking-[0.22em] text-subtle uppercase">Nome empresarial</p>
       <p className="mt-2 text-sm tracking-wide">{BOUTIQUE.legalName}</p>
       <p className="mt-1 text-sm text-muted">CNPJ {BOUTIQUE.cnpj}</p>
-      <Link to="/trocas" className="mt-3 inline-block text-[10px] tracking-[0.18em] uppercase underline">
-        Política de trocas
-      </Link>
+      <p className="mt-3 flex justify-center gap-4 text-[10px] tracking-[0.18em] uppercase">
+        <Link to="/trocas" className="underline">
+          Trocas
+        </Link>
+        <Link to="/boutique" className="underline">
+          Boutique
+        </Link>
+        <Link to="/atelier" className="underline">
+          Shopper
+        </Link>
+      </p>
     </div>
   );
 }
