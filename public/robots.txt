@@ -4,4 +4,4 @@ Disallow: /checkout
 Disallow: /app
 Disallow: /shopify
 
-Sitemap: https://www.glauciasampaio.com.br/sitemap.xml
+Sitemap: https://www.glauciasampaio.com/sitemap.xml

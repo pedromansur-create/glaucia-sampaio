@@ -1,6 +1,6 @@
 import { BOUTIQUE, INSTAGRAM, collections, occasions, type Product } from "./catalog";
 
-export const SITE_URL = "https://www.glauciasampaio.com.br";
+export const SITE_URL = "https://www.glauciasampaio.com";
 export const SITE_NAME = "Gláucia Sampaio";
 export const DEFAULT_TITLE =
   "Gláucia Sampaio | Vestidos de festa em Uberlândia — Fabulous Agilità, Agilità, Zen, Skazi";
