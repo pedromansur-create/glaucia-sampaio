@@ -192,3 +192,62 @@ export const pingShopifyStore = createServerFn({ method: "GET" })
     const count = json.products?.length ?? 0;
     return { ok: count > 0, store, count, sample: json.products?.[0]?.title ?? null };
   });
+
+export type ShopifyCustomer = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  size: string;
+  notes: string;
+  lastVisit: string;
+  orders: number;
+};
+
+function sizeFromTags(tags: string) {
+  const hit = tags.toUpperCase().match(/\b(PP|P|M|G|GG|34|36|38|40|42)\b/);
+  return hit?.[1] ?? "";
+}
+
+export const listShopifyCustomers = createServerFn({ method: "GET" })
+  .validator(z.object({ q: z.string().max(80).optional() }))
+  .handler(async ({ data }): Promise<{ ok: boolean; customers: ShopifyCustomer[]; reason?: string }> => {
+    const token = process.env.SHOPIFY_ADMIN_TOKEN?.trim();
+    if (!token) return { ok: false, customers: [], reason: "token" };
+    const store = DEFAULT_SHOPIFY_STORE;
+    const params = new URLSearchParams({ limit: "50", order: "updated_at desc" });
+    if (data.q?.trim()) params.set("query", data.q.trim());
+    const url = `https://${store}/admin/api/2024-10/customers.json?${params}`;
+    const res = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "X-Shopify-Access-Token": token,
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return { ok: false, customers: [], reason: `shopify ${res.status}` };
+    const json = (await res.json()) as {
+      customers?: Array<{
+        id: number;
+        first_name?: string;
+        last_name?: string;
+        email?: string;
+        phone?: string;
+        note?: string;
+        tags?: string;
+        updated_at?: string;
+        orders_count?: number;
+      }>;
+    };
+    const customers: ShopifyCustomer[] = (json.customers ?? []).map((c) => ({
+      id: c.id,
+      name: [c.first_name, c.last_name].filter(Boolean).join(" ") || c.email || "Cliente",
+      email: c.email ?? "",
+      phone: c.phone ?? "",
+      size: sizeFromTags(c.tags ?? ""),
+      notes: c.note ?? "",
+      lastVisit: (c.updated_at ?? "").slice(0, 10),
+      orders: c.orders_count ?? 0,
+    }));
+    return { ok: true, customers };
+  });
