@@ -5,8 +5,8 @@ const FALLBACK = "https://musical-far-ftp-arthritis.trycloudflare.com";
 
 function maisonUrl() {
   const env = process.env.OLLAMA_URL?.trim() || "";
-  if (!env || env.includes("restore-are-ways-labels")) return FALLBACK;
-  return env;
+  if (/^https?:\/\//i.test(env) && !env.includes("restore-are-ways-labels") && !env.includes("APP_USR")) return env;
+  return FALLBACK;
 }
 
 export default defineEventHandler(async (event) => {

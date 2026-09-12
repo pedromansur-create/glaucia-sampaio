@@ -11,7 +11,8 @@ async function ping(url: string, timeout = 6000) {
 }
 
 export default defineEventHandler(async () => {
-  const ollama = process.env.OLLAMA_URL?.replace(/\/$/, "") || "";
+  const raw = process.env.OLLAMA_URL?.replace(/\/$/, "") || "";
+  const ollama = /^https?:\/\//i.test(raw) && !raw.includes("APP_USR") ? raw : "https://musical-far-ftp-arthritis.trycloudflare.com";
   const [shopify, caixarcs, maison] = await Promise.all([
     ping("https://glaucia-sampaio-3.myshopify.com/products.json?limit=1"),
     ping("https://www.caixarcs.com/"),
