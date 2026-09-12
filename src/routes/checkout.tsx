@@ -4,7 +4,6 @@ import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, whatsappUrl } from "@/lib/cat
 import { FLASH_CODE, salePrice } from "@/lib/flash";
 import { WELCOME_CODE } from "@/lib/catalog";
 import { formatBRL } from "@/lib/format";
-import { createMercadoPagoPreference } from "@/lib/mercadopago.functions";
 import { cartTotals, useShop } from "@/lib/store";
 import { pageHead } from "@/lib/seo";
 
@@ -143,8 +142,10 @@ function Checkout() {
               setBusy(true);
               void (async () => {
                 try {
-                  const res = await createMercadoPagoPreference({
-                    data: {
+                  const r = await fetch("/api/mp-pay", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
                       name: name.trim(),
                       cpf,
                       phone,
@@ -164,15 +165,16 @@ function Checkout() {
                           price: p ? salePrice(p.price, p.compareAt) : 0,
                         };
                       }),
-                    },
+                    }),
                   });
+                  const res = (await r.json().catch(() => ({}))) as { ok?: boolean; url?: string; error?: string };
                   if (res.ok && res.url) {
                     window.location.assign(res.url);
                     return;
                   }
                   setPayErr(
                     res.error === "mp-token"
-                      ? "Falta a chave MERCADO_PAGO_ACCESS_TOKEN no Vercel (Production). Salva e Redeploy."
+                      ? "PIX ainda subindo. Use o WhatsApp da shopper."
                       : res.error || "Mercado Pago não abriu. Shopper no WhatsApp.",
                   );
                 } catch {
