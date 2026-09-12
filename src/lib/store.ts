@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { FREE_SHIPPING_FROM, WELCOME_CODE, WELCOME_RATE, getProduct } from "./catalog";
+import { FREE_SHIPPING_FROM, WELCOME_CODE, WELCOME_RATE, getProduct, variantIdFor } from "./catalog";
 import { FLASH_CODE, FLASH_RATE, flashActive } from "./flash";
 import { DEFAULT_SHOPIFY_STORE } from "./shopify";
 
@@ -66,11 +66,16 @@ export const useShop = create<ShopState>()(
       zoom: 1,
       herSize: "",
       add: (item) => {
-        const key = itemKey(item);
+        const p = getProduct(item.slug);
+        const lined = {
+          ...item,
+          variantId: item.variantId ?? (p ? variantIdFor(p, item.size, item.colorName) : undefined),
+        };
+        const key = itemKey(lined);
         const cart = [...get().cart];
         const i = cart.findIndex((c) => itemKey(c) === key);
-        if (i >= 0) cart[i] = { ...cart[i], qty: cart[i].qty + item.qty };
-        else cart.push(item);
+        if (i >= 0) cart[i] = { ...cart[i], qty: cart[i].qty + lined.qty, variantId: lined.variantId ?? cart[i].variantId };
+        else cart.push(lined);
         const first = !get().welcomeUsed;
         if (typeof document !== "undefined" && item.size) {
           document.cookie = `gs-size=${encodeURIComponent(item.size)};path=/;max-age=31536000;samesite=lax`;
@@ -90,7 +95,15 @@ export const useShop = create<ShopState>()(
         }),
       setSize: (key, size) =>
         set({
-          cart: get().cart.map((c) => (itemKey(c) === key ? { ...c, size, variantId: undefined } : c)),
+          cart: get().cart.map((c) => {
+            if (itemKey(c) !== key) return c;
+            const p = getProduct(c.slug);
+            return {
+              ...c,
+              size,
+              variantId: p ? variantIdFor(p, size, c.colorName) ?? c.variantId : c.variantId,
+            };
+          }),
         }),
       toggleWish: (slug) => {
         const w = get().wishlist;

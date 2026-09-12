@@ -2,8 +2,8 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Layers, ShoppingBag, Sparkles, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
+import { getProduct, WELCOME_CODE, whatsappUrl } from "@/lib/catalog";
 import { shopifyCartUrl, shopifyReadyCount } from "@/lib/shopify";
-import { WELCOME_CODE } from "@/lib/catalog";
 import { FLASH_CODE, flashActive } from "@/lib/flash";
 import { useShop } from "@/lib/store";
 
@@ -122,11 +122,31 @@ export function ShopifyPayButton({ className }: { className?: string }) {
   const welcomeApplied = useShop((s) => s.welcomeApplied);
   const ready = shopifyReadyCount(cart);
   const url = shopifyCartUrl(store, cart, flashActive() ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : null);
-  if (!url || ready === 0) return null;
+  if (cart.length === 0) return null;
+  if (!url || ready === 0) {
+    const text = cart
+      .map((i) => {
+        const p = getProduct(i.slug);
+        return `${p?.brand ?? ""} ${p?.shortName ?? i.slug} ${i.size}`.trim();
+      })
+      .join("; ");
+    return (
+      <a
+        href={whatsappUrl(`Olá, quero fechar: ${text}`)}
+        target="_blank"
+        rel="noreferrer"
+        className={cn(
+          "flex h-12 items-center justify-center rounded-pill bg-ink text-xs tracking-[0.2em] text-paper uppercase",
+          className,
+        )}
+      >
+        Fechar no WhatsApp
+      </a>
+    );
+  }
   return (
     <a
       href={url}
-      target="_blank"
       rel="noreferrer"
       data-cursor="on"
       className={cn(
@@ -134,7 +154,7 @@ export function ShopifyPayButton({ className }: { className?: string }) {
         className,
       )}
     >
-      Pagar · {ready} {ready === 1 ? "peça" : "peças"}
+      Pagar · PIX
     </a>
   );
 }

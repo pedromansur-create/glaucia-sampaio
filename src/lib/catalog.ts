@@ -35,6 +35,7 @@ export type Product = {
   sku: string;
   completeTheLook?: string[];
   shopifyHandle?: string;
+  shopifyVariants?: { id: number; size: string; color: string }[];
 };
 
 export type Occasion = {
@@ -774,7 +775,22 @@ function productFromSeed(raw: {
     description: title,
     sku: raw.handle,
     shopifyHandle: raw.handle,
+    shopifyVariants: (raw as { variants?: { id?: number; size?: string; color?: string }[] }).variants
+      ?.filter((v) => v.id)
+      .map((v) => ({ id: Number(v.id), size: String(v.size || ""), color: String(v.color || "") })),
   };
+}
+
+export function variantIdFor(p: Product, size: string, color?: string) {
+  const vars = p.shopifyVariants ?? [];
+  if (!vars.length) return undefined;
+  const n = size.toLowerCase();
+  const c = (color || "").toLowerCase();
+  return (
+    vars.find((v) => v.size.toLowerCase() === n && c && v.color.toLowerCase() === c)?.id ??
+    vars.find((v) => v.size.toLowerCase() === n)?.id ??
+    vars[0]?.id
+  );
 }
 
 export function hydrateFromShopify(items: Product[]) {
@@ -797,6 +813,7 @@ export function hydrateFromShopify(items: Product[]) {
       images: live.images?.length ? live.images : local.images,
       brand: live.brand || local.brand,
       composition: live.composition || local.composition || local.fabric,
+      shopifyVariants: live.shopifyVariants?.length ? live.shopifyVariants : local.shopifyVariants,
     };
   });
   hydrated = merged;

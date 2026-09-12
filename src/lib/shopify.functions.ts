@@ -133,6 +133,9 @@ function mapCatalogProduct(raw: RawProduct): Product {
     description: title,
     sku: v0?.sku || handle,
     shopifyHandle: handle,
+    shopifyVariants: raw.variants
+      .filter((v) => v.id)
+      .map((v) => ({ id: v.id, size: v.option1 ?? "", color: v.option2 ?? "" })),
   };
 }
 

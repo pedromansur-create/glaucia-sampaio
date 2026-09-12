@@ -275,16 +275,9 @@ function CartDrawer() {
             <Row k="Total" v={formatBRL(totals.total)} strong />
           </div>
           <ShopifyPayButton className="mt-5" />
-          <Link
-            to="/checkout"
-            onClick={() => setOpen(false)}
-            className={cn(
-              "mt-3 flex h-12 items-center justify-center text-[11px] tracking-[0.22em] uppercase",
-              cart.length === 0 && "pointer-events-none opacity-40",
-            )}
-          >
-            Checkout
-          </Link>
+          <p className="mt-3 text-center text-[10px] tracking-[0.12em] text-muted uppercase">
+            PIX · 10x · sem criar conta
+          </p>
         </div>
       </div>
     </aside>
