@@ -799,10 +799,6 @@ export function hydrateFromShopify(items: Product[]) {
       composition: live.composition || local.composition || local.fabric,
     };
   });
-  const seen = new Set(merged.map((p) => p.slug));
-  for (const p of products) {
-    if (![...seen].some((s) => s.includes(p.slug)) && !seen.has(p.slug)) merged.push(p);
-  }
   hydrated = merged;
   bumpCatalog();
 }
