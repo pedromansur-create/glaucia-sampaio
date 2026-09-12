@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, variantIdFor, whatsappUrl } from "@/lib/catalog";
+import { useMemo, useState } from "react";
+import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, whatsappUrl } from "@/lib/catalog";
 import { FLASH_CODE, salePrice } from "@/lib/flash";
 import { WELCOME_CODE } from "@/lib/catalog";
 import { formatBRL } from "@/lib/format";
 import { createMercadoPagoPreference } from "@/lib/mercadopago.functions";
-import { startShopifyPay } from "@/lib/shopify.functions";
 import { cartTotals, useShop } from "@/lib/store";
 import { pageHead } from "@/lib/seo";
 
@@ -46,7 +45,6 @@ function validCpf(s: string) {
 
 function Checkout() {
   const cart = useShop((s) => s.cart);
-  const store = useShop((s) => s.shopifyStore);
   const welcomeApplied = useShop((s) => s.welcomeApplied);
   const totals = useMemo(() => cartTotals(cart, welcomeApplied), [cart, welcomeApplied]);
   const [name, setName] = useState("");
@@ -59,17 +57,6 @@ function Checkout() {
   const [cepErr, setCepErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [payErr, setPayErr] = useState("");
-  const [applePay, setApplePay] = useState(false);
-  const [mpReady, setMpReady] = useState(false);
-
-  useEffect(() => {
-    const Apple = (window as Window & { ApplePaySession?: { canMakePayments?: () => boolean } }).ApplePaySession;
-    setApplePay(Boolean(Apple && (Apple.canMakePayments ? Apple.canMakePayments() : true)));
-    fetch("/api/mercadopago")
-      .then((r) => r.json() as Promise<{ token?: boolean }>)
-      .then((d) => setMpReady(Boolean(d.token)))
-      .catch(() => setMpReady(false));
-  }, []);
 
   const orderText = cart
     .map((i) => {
@@ -96,37 +83,6 @@ function Checkout() {
     } catch {
       setCepErr("Não deu pra ler o CEP");
     }
-  }
-
-  function payShopify() {
-    return startShopifyPay({
-      data: {
-        cart: cart.map((i) => {
-          const p = getProduct(i.slug);
-          return {
-            slug: i.slug,
-            handle: p?.shopifyHandle ?? i.slug,
-            size: i.size,
-            qty: i.qty,
-            variantId: i.variantId ?? (p ? variantIdFor(p, i.size) : undefined),
-            color: i.colorName,
-          };
-        }),
-        name: name.trim(),
-        phone: onlyDigits(phone),
-        cep: onlyDigits(cep),
-        cpf: validCpf(cpf) ? formatCpf(cpf) : undefined,
-        city: city || undefined,
-        street: street || undefined,
-        uf: uf || undefined,
-      },
-    }).then((res) => {
-      if (res.ok && res.url) {
-        window.location.assign(res.url);
-        return true;
-      }
-      return false;
-    });
   }
 
   const canPay =
@@ -284,26 +240,6 @@ function Checkout() {
             >
               {busy ? "…" : "Pagar · PIX Mercado Pago"}
             </button>
-            {applePay ? (
-              <button
-                type="button"
-                disabled={busy || !canPay}
-                onClick={() => {
-                  if (busy || !canPay) return;
-                  setPayErr("");
-                  setBusy(true);
-                  void payShopify().then((ok) => {
-                    if (!ok) {
-                      setPayErr("Apple Pay não abriu. Use PIX ou a shopper.");
-                      setBusy(false);
-                    }
-                  });
-                }}
-                className="flex h-12 w-full items-center justify-center border border-ink text-[11px] tracking-[0.2em] uppercase disabled:opacity-30"
-              >
-                Apple Pay
-              </button>
-            ) : null}
           </form>
 
           <a
