@@ -814,6 +814,7 @@ export function hydrateFromShopify(items: Product[]) {
       occasions: live.occasions.length ? live.occasions : local.occasions,
       images: live.images?.length ? live.images : local.images,
       brand: live.brand || local.brand,
+      colors: live.colors?.length && live.colors[0]?.name !== "Única" ? live.colors : local.colors,
       composition: live.composition || local.composition || local.fabric,
       shopifyVariants: live.shopifyVariants?.length ? live.shopifyVariants : local.shopifyVariants,
     };
@@ -950,8 +951,8 @@ export function searchProducts(q: string, herSize?: string) {
     if (wantWedding && (p.occasions.includes("madrinhas") || p.occasions.includes("casamento-dia") || p.category === "vestido"))
       s += 10;
     if (wantWhite && (p.occasions.includes("all-white") || /branco|white|off|nude|marfim|cru|palha|bege|ivory/.test(hay))) s += 12;
-    if (wantBlack && /preto|black|noir|ebano/.test(hay)) s += 12;
-    if (wantBlack && !/preto|black|noir|ebano/.test(hay)) s -= 4;
+    if (wantBlack && /preto|black|noir|ebano/.test(hay)) s += 18;
+    if (wantBlack && !/preto|black|noir|ebano/.test(hay)) s -= 40;
     if (wantNight && (p.occasions.includes("eventos-noturnos") || /paete|brilho|tule|bordado|festa/.test(hay))) s += 8;
     if (wantDay && p.occasions.includes("casamento-dia")) s += 6;
     if (wantDress && p.category === "vestido") s += 8;
