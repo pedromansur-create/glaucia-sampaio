@@ -57,18 +57,9 @@ function Header() {
   const setSearchOpen = useShop((s) => s.setSearchOpen);
   const cycleZoom = useShop((s) => s.cycleZoom);
   const count = cart.reduce((a, i) => a + i.qty, 0);
-  const [flash, setFlash] = useState(flashActive);
-
-  useEffect(() => {
-    const id = window.setInterval(() => setFlash(flashActive()), 20000);
-    return () => window.clearInterval(id);
-  }, []);
 
   return (
     <header className="sticky top-0 z-40 bg-bg pt-[max(0.35rem,env(safe-area-inset-top))]">
-      {flash ? (
-        <p className="pb-0.5 text-center text-[10px] tracking-[0.22em] text-muted uppercase">25% até meia-noite</p>
-      ) : null}
       <div className="grid grid-cols-[auto_1fr_auto] items-center px-2">
         <button
           type="button"
