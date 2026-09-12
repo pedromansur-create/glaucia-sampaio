@@ -1,11 +1,17 @@
 import { defineEventHandler, readBody, setResponseStatus } from "h3";
 
 const KINDS = new Set(["recado", "anuncio", "caixa"]);
+const FALLBACK = "https://musical-far-ftp-arthritis.trycloudflare.com";
+
+function maisonUrl() {
+  const env = process.env.OLLAMA_URL?.trim() || "";
+  if (!env || env.includes("restore-are-ways-labels")) return FALLBACK;
+  return env;
+}
 
 export default defineEventHandler(async (event) => {
   if (event.method === "GET") {
-    const url = process.env.OLLAMA_URL?.trim();
-    if (!url) return { ok: false, local: false };
+    const url = maisonUrl();
     try {
       const r = await fetch(`${url.replace(/\/$/, "")}/health`, { signal: AbortSignal.timeout(4000) });
       const json = (await r.json().catch(() => ({}))) as { nodes?: unknown; exclusive?: string[] };
@@ -18,11 +24,7 @@ export default defineEventHandler(async (event) => {
     setResponseStatus(event, 405);
     return { ok: false };
   }
-  const url = process.env.OLLAMA_URL?.trim();
-  if (!url) {
-    setResponseStatus(event, 204);
-    return { ok: false, local: false };
-  }
+  const url = maisonUrl();
   const body = ((await readBody(event)) ?? {}) as { kind?: string };
   const kind = KINDS.has(body.kind ?? "") ? body.kind : "recado";
   const key = process.env.MAISON_KEY?.trim();
