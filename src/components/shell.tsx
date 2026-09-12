@@ -1,12 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   BOUTIQUE,
   WELCOME_CODE,
   getProduct,
   searchProducts,
   whatsappUrl,
+  type Product,
 } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { formatBRL } from "@/lib/format";
@@ -497,14 +498,19 @@ function SizeGuide() {
 export function ProductCard({
   slug,
   product,
+  eager = false,
 }: {
   slug: string;
   product?: ReturnType<typeof getProduct>;
+  eager?: boolean;
 }) {
   const p = product ?? getProduct(slug);
   const zoom = useShop((s) => s.zoom);
   if (!p) return null;
   const href = `/produto/${p.slug}`;
+  const src = p.images[0]?.includes("cdn.shopify.com")
+    ? `${p.images[0].split("?")[0]}?width=720`
+    : p.images[0];
   return (
     <article className="relative z-20">
       <a
@@ -518,14 +524,51 @@ export function ProductCard({
       >
         <div className="aspect-[3/4] overflow-hidden bg-white">
           <img
-            src={p.images[0]}
+            src={src}
             alt={`${p.brand} ${p.name}`}
+            width={720}
+            height={960}
+            loading={eager ? "eager" : "lazy"}
+            decoding="async"
+            fetchPriority={eager ? "high" : "low"}
             className="h-full w-full object-cover object-top"
             style={{ transform: `scale(${zoom})` }}
           />
         </div>
       </a>
     </article>
+  );
+}
+
+export function ProductGrid({ products }: { products: Product[] }) {
+  const step = 24;
+  const [n, setN] = useState(step);
+  const sentinel = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    setN(step);
+  }, [products]);
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) setN((x) => Math.min(x + step, products.length));
+      },
+      { rootMargin: "1200px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [products.length, n]);
+  const shown = products.slice(0, n);
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-1 md:grid-cols-3">
+        {shown.map((p, i) => (
+          <ProductCard key={p.slug} slug={p.slug} product={p} eager={i < 6} />
+        ))}
+      </div>
+      {n < products.length ? <div ref={sentinel} className="h-10" aria-hidden /> : null}
+    </>
   );
 }
 

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSyncExternalStore } from "react";
-import { ProductCard } from "@/components/shell";
+import { ProductGrid } from "@/components/shell";
 import { catalogStamp, collections, productsForCollection, subscribeCatalog } from "@/lib/catalog";
 import { collectionJsonLd, jsonLdScript, pageHead } from "@/lib/seo";
 
@@ -38,13 +38,9 @@ function CollectionPage() {
       <h1 className="sr-only">{col?.title ?? "Coleção"} | Gláucia Sampaio</h1>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdScript(collectionJsonLd(col?.title ?? "Coleção", `/colecao/${slug}`, sorted)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(collectionJsonLd(col?.title ?? "Coleção", `/colecao/${slug}`, sorted.slice(0, 24))) }}
       />
-      <div className="grid grid-cols-2 gap-1 md:grid-cols-3">
-        {sorted.map((p) => (
-          <ProductCard key={p.slug} slug={p.slug} product={p} />
-        ))}
-      </div>
+      <ProductGrid products={sorted} />
     </div>
   );
 }

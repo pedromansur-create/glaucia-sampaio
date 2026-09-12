@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSyncExternalStore } from "react";
-import { ProductCard } from "@/components/shell";
+import { ProductGrid } from "@/components/shell";
 import { allProducts, catalogStamp, subscribeCatalog } from "@/lib/catalog";
 import { sizeOnHand } from "@/lib/inventory";
 import { useShop } from "@/lib/store";
@@ -29,12 +29,8 @@ function Home() {
       <h1 className="sr-only">
         Gláucia Sampaio Boutique Uberlândia — vestidos Fabulous Agilità, Agilità, Zen e Skazi
       </h1>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(collectionJsonLd("Novidades", "/", pool)) }} />
-      <div className="grid grid-cols-2 gap-1 md:grid-cols-3">
-        {ranked.map((p) => (
-          <ProductCard key={p.slug} slug={p.slug} product={p} />
-        ))}
-      </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(collectionJsonLd("Novidades", "/", ranked.slice(0, 24))) }} />
+      <ProductGrid products={ranked} />
     </div>
   );
 }
