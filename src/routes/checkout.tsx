@@ -180,33 +180,32 @@ function Checkout() {
               setPayErr("");
               setBusy(true);
               void (async () => {
-                if (mpReady) {
-                  try {
-                    const res = await createMercadoPagoPreference({
-                      data: {
-                        name: name.trim(),
-                        cpf,
-                        phone,
-                        cep,
-                        city,
-                        street,
-                        uf,
-                        cart: cart.map((i) => ({ slug: i.slug, size: i.size, qty: i.qty })),
-                      },
-                    });
-                    if (res.ok && res.url) {
-                      window.location.assign(res.url);
-                      return;
-                    }
-                  } catch {
-                    /* cai no PIX da Shopify */
+                try {
+                  const res = await createMercadoPagoPreference({
+                    data: {
+                      name: name.trim(),
+                      cpf,
+                      phone,
+                      cep,
+                      city,
+                      street,
+                      uf,
+                      cart: cart.map((i) => ({ slug: i.slug, size: i.size, qty: i.qty })),
+                    },
+                  });
+                  if (res.ok && res.url) {
+                    window.location.assign(res.url);
+                    return;
                   }
+                  setPayErr(
+                    res.error === "mp-token"
+                      ? "PIX Mercado Pago ainda sem chave. Coloca MERCADO_PAGO_ACCESS_TOKEN no Vercel."
+                      : "Mercado Pago não abriu. Shopper no WhatsApp.",
+                  );
+                } catch {
+                  setPayErr("Mercado Pago não abriu. Shopper no WhatsApp.");
                 }
-                const ok = await payShopify();
-                if (!ok) {
-                  setPayErr("Não abriu o PIX. Fale com a shopper.");
-                  setBusy(false);
-                }
+                setBusy(false);
               })();
             }}
           >
@@ -274,7 +273,7 @@ function Checkout() {
               disabled={busy || !canPay}
               className="mt-6 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.2em] text-paper uppercase disabled:opacity-30"
             >
-              {busy ? "…" : "Pagar · PIX"}
+              {busy ? "…" : "Pagar · PIX Mercado Pago"}
             </button>
             {applePay ? (
               <button
@@ -307,7 +306,7 @@ function Checkout() {
             Prefiro a shopper
           </a>
           <p className="mt-8 text-center text-[10px] leading-relaxed text-muted">
-            CPF na nota. Sem criar conta. PIX primeiro. 10x. 7 dias. {BOUTIQUE.cnpj}
+            PIX Mercado Pago na conta RCS. CPF na nota. Sem criar conta. 10x. 7 dias. {BOUTIQUE.cnpj}
           </p>
         </>
       )}
