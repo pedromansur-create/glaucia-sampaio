@@ -909,10 +909,11 @@ export function searchProducts(q: string, herSize?: string) {
     : herSize;
 
   const wantWhite = /all\s*white|branco|off\s*white|offwhite|marfim|nude|cru|palha|bege|ivory|champagne/.test(n);
+  const wantBlack = /preto|black|noir|ebano/.test(n);
   const wantNight = /noite|gala|festa|formatura|reveillon|paete|pailete|brilho|bordado/.test(n);
   const wantWedding = /madrinha|casamento|civil|igreja|noiva/.test(n);
   const wantDay = /dia|almoço|almoco|batizado|cha de/.test(n);
-  const wantDress = /vestido/.test(n);
+  const wantDress = /vestid|vested|dress/.test(n);
   const wantSet = /conjunto/.test(n);
   const wantSkirt = /saia/.test(n);
   const wantTop = /blusa|top|camisa/.test(n);
@@ -928,7 +929,18 @@ export function searchProducts(q: string, herSize?: string) {
 
   const scored = pool.map((p) => {
     const hay = fold(
-      [p.name, p.brand, p.shortName, p.collection, p.fabric, p.composition, p.category, p.slug, ...(p.occasions ?? [])].join(" "),
+      [
+        p.name,
+        p.brand,
+        p.shortName,
+        p.collection,
+        p.fabric,
+        p.composition,
+        p.category,
+        p.slug,
+        ...(p.occasions ?? []),
+        ...(p.colors ?? []).map((c) => c.name),
+      ].join(" "),
     );
     let s = 0;
     for (const w of words) {
@@ -938,6 +950,8 @@ export function searchProducts(q: string, herSize?: string) {
     if (wantWedding && (p.occasions.includes("madrinhas") || p.occasions.includes("casamento-dia") || p.category === "vestido"))
       s += 10;
     if (wantWhite && (p.occasions.includes("all-white") || /branco|white|off|nude|marfim|cru|palha|bege|ivory/.test(hay))) s += 12;
+    if (wantBlack && /preto|black|noir|ebano/.test(hay)) s += 12;
+    if (wantBlack && !/preto|black|noir|ebano/.test(hay)) s -= 4;
     if (wantNight && (p.occasions.includes("eventos-noturnos") || /paete|brilho|tule|bordado|festa/.test(hay))) s += 8;
     if (wantDay && p.occasions.includes("casamento-dia")) s += 6;
     if (wantDress && p.category === "vestido") s += 8;
