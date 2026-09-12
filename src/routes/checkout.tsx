@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { ShopifyPayButton } from "@/components/ios";
 import { BOUTIQUE, FREE_SHIPPING_FROM, WELCOME_CODE, getProduct, whatsappUrl } from "@/lib/catalog";
+import { FLASH_CODE } from "@/lib/flash";
 import { formatBRL } from "@/lib/format";
 import { cartTotals, useShop } from "@/lib/store";
 import { pageHead } from "@/lib/seo";
@@ -59,7 +60,7 @@ function Checkout() {
       )}
       {totals.discount > 0 && (
         <p className="mt-6 text-[11px] tracking-[0.12em] text-muted uppercase">
-          {totals.code === "FLASH25" ? "25% até meia-noite" : `${WELCOME_CODE} 10% aplicado`}
+          {totals.code === FLASH_CODE ? "25% até meia-noite" : `${WELCOME_CODE} 10% aplicado`}
         </p>
       )}
       <div className="mt-6 space-y-1 text-sm">

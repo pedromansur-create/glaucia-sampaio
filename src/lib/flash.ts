@@ -1,5 +1,5 @@
 /** Sitewide 25% until midnight 11→12 Sep 2026, America/Sao_Paulo. */
-export const FLASH_CODE = "FLASH25";
+export const FLASH_CODE = "CASANOVA25";
 export const FLASH_RATE = 0.25;
 export const FLASH_ENDS = Date.parse("2026-09-12T00:00:00-03:00");
 
