@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { inferOccasions, SIZES, type Product } from "./catalog";
+import { canonSize } from "./inventory";
 import {
   DEFAULT_SHOPIFY_STORE,
   SHOPIFY_SLUG_BY_HANDLE,
@@ -112,6 +113,12 @@ function mapCatalogProduct(raw: RawProduct): Product {
   const title = raw.title.replace(/\s+COLE[CÇ][AÃ]O.*$/i, "").trim();
   const season = seasonOf(handle, tags, raw.title);
   const isVerao27 = season === "Verão 27";
+  const sizeSet = [
+    ...new Set(
+      raw.variants.map((v) => canonSize(v.option1 ?? "")).filter((s): s is NonNullable<typeof s> => Boolean(s)),
+    ),
+  ];
+  const sizes = SIZES.filter((s) => sizeSet.includes(s));
   const hay = `${handle} ${tags.join(" ")} ${raw.title}`.toLowerCase();
   return {
     id: String(raw.id ?? handle),
@@ -122,7 +129,7 @@ function mapCatalogProduct(raw: RawProduct): Product {
     price,
     compareAt: compare > price * 1.02 ? compare : undefined,
     colors: colors.length ? colors : [{ id: "unico", name: "Única", hex: "#c9bfb2" }],
-    sizes: [...SIZES],
+    sizes: sizes.length ? sizes : [...SIZES],
     images: images.length ? images : ["/looks/hero-portrait.jpg"],
     category: categoryOf(raw.product_type ?? ""),
     occasions: inferOccasions(tags, raw.product_type ?? "", title),
@@ -137,7 +144,7 @@ function mapCatalogProduct(raw: RawProduct): Product {
     shopifyHandle: handle,
     shopifyVariants: raw.variants
       .filter((v) => v.id)
-      .map((v) => ({ id: v.id, size: v.option1 ?? "", color: v.option2 ?? "" })),
+      .map((v) => ({ id: v.id, size: v.option1 ?? "", color: v.option2 ?? "", available: Boolean(v.available) })),
   };
 }
 

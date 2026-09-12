@@ -1,6 +1,6 @@
 import seed from "../data/shopify-catalog.json";
 import compositionMap from "../data/composition.json";
-import { hydrateInventory, sizeOnHand, stockFromVariants } from "./inventory";
+import { canonSize, hydrateInventory, sizeOnHand, stockFromVariants } from "./inventory";
 
 export type Size = "PP" | "P" | "M" | "G" | "GG";
 
@@ -35,7 +35,7 @@ export type Product = {
   sku: string;
   completeTheLook?: string[];
   shopifyHandle?: string;
-  shopifyVariants?: { id: number; size: string; color: string }[];
+  shopifyVariants?: { id: number; size: string; color: string; available?: boolean }[];
 };
 
 export type Occasion = {
@@ -785,12 +785,15 @@ function productFromSeed(raw: {
 export function variantIdFor(p: Product, size: string, color?: string) {
   const vars = p.shopifyVariants ?? [];
   if (!vars.length) return undefined;
-  const n = size.toLowerCase();
+  const want = canonSize(size) || size.toLowerCase();
   const c = (color || "").toLowerCase();
+  const sized = vars.filter((v) => (canonSize(v.size) || v.size.toLowerCase()) === want);
+  const pool = sized.length ? sized : vars;
   return (
-    vars.find((v) => v.size.toLowerCase() === n && c && v.color.toLowerCase() === c)?.id ??
-    vars.find((v) => v.size.toLowerCase() === n)?.id ??
-    vars[0]?.id
+    pool.find((v) => c && v.color.toLowerCase() === c && v.available !== false)?.id ??
+    pool.find((v) => c && v.color.toLowerCase() === c)?.id ??
+    pool.find((v) => v.available !== false)?.id ??
+    pool[0]?.id
   );
 }
 
@@ -820,6 +823,20 @@ export function hydrateFromShopify(items: Product[]) {
     };
   });
   hydrated = merged;
+  hydrateInventory(
+    merged
+      .filter((p) => p.shopifyHandle)
+      .map((p) =>
+        stockFromVariants(
+          p.shopifyHandle as string,
+          (p.shopifyVariants ?? []).map((v) => ({
+            size: v.size,
+            color: v.color,
+            available: v.available,
+          })),
+        ),
+      ),
+  );
   bumpCatalog();
 }
 
