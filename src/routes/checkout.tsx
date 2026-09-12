@@ -264,9 +264,9 @@ function Checkout() {
             <button
               type="submit"
               disabled={busy || !canPay}
-              className="mt-6 flex h-12 w-full items-center justify-center border border-line text-[11px] tracking-[0.2em] uppercase disabled:opacity-30"
+              className="mt-6 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.2em] text-paper uppercase disabled:opacity-30"
             >
-              {busy ? "…" : "PIX ou cartão"}
+              {busy ? "…" : "Pagar · Mercado Pago"}
             </button>
           </form>
 
@@ -274,9 +274,9 @@ function Checkout() {
             href={whatsappUrl(
               `Olá, sou ${name || "—"}. CPF ${cpf || "—"}. WhatsApp ${phone || "—"}. ${street || ""} ${number || ""} ${apt ? `apto ${apt}` : ""} ${city || ""} ${uf || ""} CEP ${cep || ""}. Quero fechar: ${orderText}. Total ${formatBRL(totals.total)}.`,
             )}
-            className="mt-3 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.2em] text-paper uppercase"
+            className="mt-3 block text-center text-[11px] tracking-[0.18em] text-muted uppercase underline"
           >
-            Fechar no WhatsApp
+            Prefiro WhatsApp
           </a>
           <p className="mt-8 text-center text-[10px] leading-relaxed text-muted">
             PIX ou cartão em até 10x. Conta Canário Amarelo. CPF na nota. Sem criar conta. 7 dias. {BOUTIQUE.cnpj}
