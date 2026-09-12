@@ -135,62 +135,38 @@ function Checkout() {
 
           <form
             className="mt-12 space-y-7"
+            method="POST"
+            action="https://www.glauciasampaio.com/api/mp-pay"
             onSubmit={(e) => {
-              e.preventDefault();
-              if (busy) return;
-              setPayErr("");
+              if (!canPay) {
+                e.preventDefault();
+                setPayErr("Confira CPF, WhatsApp, CEP e número.");
+                return;
+              }
               setBusy(true);
-              void (async () => {
-                try {
-                  const r = await fetch("/api/mp-pay", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      name: name.trim(),
-                      cpf,
-                      phone,
-                      cep,
-                      city,
-                      street,
-                      number,
-                      apt,
-                      uf,
-                      cart: totals.lines.map(({ item, product, line }) => ({
-                          slug: item.slug,
-                          size: item.size,
-                          qty: item.qty,
-                          title: product ? `${product.brand} ${product.shortName} ${item.size}` : item.slug,
-                          price: item.qty ? Number((line / item.qty).toFixed(2)) : 0,
-                        })),
-                    }),
-                  });
-                  const res = (await r.json().catch(() => ({}))) as { ok?: boolean; url?: string; error?: string };
-                  if (res.ok && res.url) {
-                    window.location.assign(res.url);
-                    return;
-                  }
-                  setPayErr(
-                    res.url
-                      ? ""
-                      : res.error === "mp-token"
-                        ? "PIX ainda subindo. Use o WhatsApp da shopper."
-                        : res.error === "dados"
-                          ? "Confira CPF e WhatsApp."
-                          : res.error === "sacola"
-                            ? "Sacola sem preço. WhatsApp da shopper."
-                            : res.error || `Mercado Pago não abriu (${r.status}). Shopper no WhatsApp.`,
-                  );
-                } catch {
-                  setPayErr("Mercado Pago não abriu. Shopper no WhatsApp.");
-                }
-                setBusy(false);
-              })();
             }}
           >
+            <input type="hidden" name="city" value={city} />
+            <input type="hidden" name="street" value={street} />
+            <input type="hidden" name="uf" value={uf} />
+            <input
+              type="hidden"
+              name="cart"
+              value={JSON.stringify(
+                totals.lines.map(({ item, product, line }) => ({
+                  slug: item.slug,
+                  size: item.size,
+                  qty: item.qty,
+                  title: product ? `${product.brand} ${product.shortName} ${item.size}` : item.slug,
+                  price: item.qty ? Number((line / item.qty).toFixed(2)) : 0,
+                })),
+              )}
+            />
             <label className="block">
               <span className="text-[10px] tracking-[0.16em] text-muted uppercase">Nome</span>
               <input
                 required
+                name="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="name"
@@ -201,6 +177,7 @@ function Checkout() {
               <span className="text-[10px] tracking-[0.16em] text-muted uppercase">CPF</span>
               <input
                 required
+                name="cpf"
                 value={cpf}
                 onChange={(e) => setCpf(formatCpf(e.target.value))}
                 inputMode="numeric"
@@ -216,6 +193,7 @@ function Checkout() {
               <span className="text-[10px] tracking-[0.16em] text-muted uppercase">WhatsApp</span>
               <input
                 required
+                name="phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 inputMode="tel"
@@ -228,6 +206,7 @@ function Checkout() {
               <span className="text-[10px] tracking-[0.16em] text-muted uppercase">CEP</span>
               <input
                 required
+                name="cep"
                 value={cep}
                 onChange={(e) => void lookupCep(e.target.value)}
                 inputMode="numeric"
@@ -247,6 +226,7 @@ function Checkout() {
                 <span className="text-[10px] tracking-[0.16em] text-muted uppercase">Número</span>
                 <input
                   required
+                  name="number"
                   value={number}
                   onChange={(e) => setNumber(e.target.value)}
                   inputMode="numeric"
@@ -258,6 +238,7 @@ function Checkout() {
               <label className="block">
                 <span className="text-[10px] tracking-[0.16em] text-muted uppercase">Apto</span>
                 <input
+                  name="apt"
                   value={apt}
                   onChange={(e) => setApt(e.target.value)}
                   placeholder="opcional"

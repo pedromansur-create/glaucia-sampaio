@@ -1,4 +1,4 @@
-import { defineEventHandler, readBody, setResponseStatus, setHeader } from "h3";
+import { defineEventHandler, getHeader, readBody, readFormData, sendRedirect, setHeader, setResponseStatus } from "h3";
 
 const SITE = "https://www.glauciasampaio.com";
 const FREE_SHIPPING_FROM = 1000;
@@ -51,7 +51,8 @@ export default defineEventHandler(async (event) => {
     return { ok: false, error: "mp-token" };
   }
 
-  const data = ((await readBody(event).catch(() => ({}))) ?? {}) as {
+  const ctype = (getHeader(event, "content-type") || "").toLowerCase();
+  let data: {
     name?: string;
     cpf?: string;
     phone?: string;
@@ -61,8 +62,34 @@ export default defineEventHandler(async (event) => {
     number?: string;
     apt?: string;
     uf?: string;
-    cart?: { slug?: string; size?: string; qty?: number; title?: string; price?: number }[];
-  };
+    cart?: { slug?: string; size?: string; qty?: number; title?: string; price?: number }[] | string;
+  } = {};
+  if (ctype.includes("application/json")) {
+    data = ((await readBody(event).catch(() => ({}))) ?? {}) as typeof data;
+  } else {
+    const form = await readFormData(event).catch(() => null);
+    if (form) {
+      data = {
+        name: String(form.get("name") || ""),
+        cpf: String(form.get("cpf") || ""),
+        phone: String(form.get("phone") || ""),
+        cep: String(form.get("cep") || ""),
+        city: String(form.get("city") || ""),
+        street: String(form.get("street") || ""),
+        number: String(form.get("number") || ""),
+        apt: String(form.get("apt") || ""),
+        uf: String(form.get("uf") || ""),
+        cart: String(form.get("cart") || "[]"),
+      };
+    }
+  }
+  if (typeof data.cart === "string") {
+    try {
+      data.cart = JSON.parse(data.cart) as typeof data.cart;
+    } catch {
+      data.cart = [];
+    }
+  }
 
   const name = String(data.name || "").trim();
   const cpf = String(data.cpf || "").replace(/\D/g, "");
@@ -149,6 +176,9 @@ export default defineEventHandler(async (event) => {
   if (!r.ok || !url) {
     setResponseStatus(event, 502);
     return { ok: false, error: json.cause?.[0]?.description || json.message || json.error || `mp-${r.status}` };
+  }
+  if (!ctype.includes("application/json")) {
+    return sendRedirect(event, url, 302);
   }
   return { ok: true, url };
 });
