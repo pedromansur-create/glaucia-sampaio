@@ -53,8 +53,8 @@ export function Shell({ children }: { children: ReactNode }) {
 
 export function Wordmark() {
   return (
-    <Link to="/" className="min-w-0 text-center">
-      <span className="block truncate text-[11px] tracking-[0.42em] uppercase md:text-[13px] md:tracking-[0.48em]">
+    <Link to="/" className="min-w-0 px-1 text-center">
+      <span className="block text-[11px] tracking-[0.18em] uppercase md:text-[13px] md:tracking-[0.28em]">
         Gláucia Sampaio
       </span>
     </Link>

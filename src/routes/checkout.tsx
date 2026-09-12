@@ -86,8 +86,8 @@ function Checkout() {
   }
 
   return (
-    <div className="mx-auto max-w-md px-6 pb-20 pt-6">
-      <h1 className="text-center text-[11px] tracking-[0.28em] uppercase">Pagar</h1>
+    <div className="mx-auto max-w-md px-6 pb-20 pt-8">
+      <h1 className="text-center text-[11px] tracking-[0.2em] uppercase">Pagar</h1>
 
       {cart.length === 0 ? (
         <p className="mt-10 text-center text-sm text-muted">Sacola vazia.</p>
@@ -99,7 +99,7 @@ function Checkout() {
                 <li key={`${item.slug}${item.size}`} className="flex gap-3 text-sm">
                   <img src={product.images[0]} alt="" className="h-16 w-12 object-cover object-top" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate uppercase tracking-[0.08em]">{product.shortName}</p>
+                    <p className="truncate uppercase tracking-[0.04em]">{product.shortName}</p>
                     <p className="mt-1 text-[11px] text-muted">
                       {item.size} · {item.qty}
                     </p>
@@ -126,7 +126,7 @@ function Checkout() {
           </div>
 
           <form
-            className="mt-10 space-y-5"
+            className="mt-12 space-y-7"
             onSubmit={(e) => {
               e.preventDefault();
               if (busy) return;
@@ -163,17 +163,17 @@ function Checkout() {
             }}
           >
             <label className="block">
-              <span className="text-[10px] tracking-[0.2em] text-muted uppercase">Nome</span>
+              <span className="text-[10px] tracking-[0.16em] text-muted uppercase">Nome</span>
               <input
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="name"
-                className="mt-1 h-12 w-full border-b border-line bg-transparent text-sm outline-none"
+                className="mt-2 h-11 w-full border-b border-line bg-transparent text-sm tracking-[0.02em] outline-none"
               />
             </label>
             <label className="block">
-              <span className="text-[10px] tracking-[0.2em] text-muted uppercase">CPF</span>
+              <span className="text-[10px] tracking-[0.16em] text-muted uppercase">CPF</span>
               <input
                 required
                 value={cpf}
@@ -181,14 +181,14 @@ function Checkout() {
                 inputMode="numeric"
                 autoComplete="off"
                 placeholder="000.000.000-00"
-                className="mt-1 h-12 w-full border-b border-line bg-transparent text-sm outline-none"
+                className="mt-2 h-11 w-full border-b border-line bg-transparent text-sm tracking-[0.06em] outline-none"
               />
             </label>
             {cpf.length >= 14 && !validCpf(cpf) ? (
               <p className="text-[11px] text-muted">CPF inválido</p>
             ) : null}
             <label className="block">
-              <span className="text-[10px] tracking-[0.2em] text-muted uppercase">WhatsApp</span>
+              <span className="text-[10px] tracking-[0.16em] text-muted uppercase">WhatsApp</span>
               <input
                 required
                 value={phone}
@@ -196,11 +196,11 @@ function Checkout() {
                 inputMode="tel"
                 autoComplete="tel"
                 placeholder="34 9"
-                className="mt-1 h-12 w-full border-b border-line bg-transparent text-sm outline-none"
+                className="mt-2 h-11 w-full border-b border-line bg-transparent text-sm tracking-[0.06em] outline-none"
               />
             </label>
             <label className="block">
-              <span className="text-[10px] tracking-[0.2em] text-muted uppercase">CEP</span>
+              <span className="text-[10px] tracking-[0.16em] text-muted uppercase">CEP</span>
               <input
                 required
                 value={cep}
@@ -208,7 +208,7 @@ function Checkout() {
                 inputMode="numeric"
                 autoComplete="postal-code"
                 placeholder="38400-000"
-                className="mt-1 h-12 w-full border-b border-line bg-transparent text-sm outline-none"
+                className="mt-2 h-11 w-full border-b border-line bg-transparent text-sm tracking-[0.06em] outline-none"
               />
             </label>
             {city ? (
@@ -230,7 +230,7 @@ function Checkout() {
                 onlyDigits(phone).length < 10 ||
                 onlyDigits(cep).length !== 8
               }
-              className="mt-4 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.28em] text-paper uppercase disabled:opacity-30"
+              className="mt-6 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.2em] text-paper uppercase disabled:opacity-30"
             >
               {busy ? "…" : "Pagar · PIX"}
             </button>
