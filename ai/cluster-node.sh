@@ -14,35 +14,34 @@ IP="10.10.10.$NODE"
 NAME="Thunderbolt Bridge"
 
 echo "Mini $NODE → $IP  (site=1  caixa=2  reserva=3)"
-echo "Ligue o cabo Thunderbolt (1—2 e 2—3). Wi-Fi fica ligado pra internet."
+echo "Cabo Thunderbolt: 1—2 e 2—3. Wi-Fi ligado. Exclusivo: site + CaixaRCS."
 echo
 
-if ! networksetup -listallnetworkservices | grep -q "$NAME"; then
-  echo "Não achei “Thunderbolt Bridge”. Em Ajustes → Rede, ligue a ponte Thunderbolt e rode de novo."
-  networksetup -listallnetworkservices
-  exit 1
+if networksetup -listallnetworkservices | grep -q "$NAME"; then
+  sudo networksetup -setmanual "$NAME" "$IP" 255.255.255.0
+  echo "Thunderbolt = $IP"
+else
+  echo "Ponte Thunderbolt ainda não apareceu. Liga o cabo e, em Ajustes → Rede, ative Thunderbolt Bridge."
+  echo "Sigo com o cérebro neste Mini; o cabo entra depois."
 fi
-
-sudo networksetup -setmanual "$NAME" "$IP" 255.255.255.0
-echo "Thunderbolt = $IP"
 
 if ! command -v ollama >/dev/null 2>&1; then
   echo "Instalando Ollama…"
   curl -fsSL https://ollama.com/install.sh | sh
 fi
 
-# Ollama só na ponte (cluster). Site e Caixa entram pelo Mini 1.
 launchctl setenv OLLAMA_HOST "0.0.0.0:11434"
+killall Ollama 2>/dev/null || true
 open -a Ollama 2>/dev/null || true
-sleep 2
+sleep 3
 ollama pull qwen3.5:9b
 ollama create gs-maison -f "$(pwd)/Modelfile"
 
 echo
-echo "Mini $NODE pronto. Ollama em $IP:11434"
+echo "Mini $NODE pronto."
 if [ "$NODE" = "1" ]; then
-  echo "Agora neste Mini:  ./cluster-gateway.sh"
-  echo "Outra janela:      ./tunnel.sh"
+  echo "Janela 1:  ./cluster-gateway.sh"
+  echo "Janela 2:  ./tunnel.sh"
 else
-  echo "Deixa o Ollama aberto. Não fecha. Mini 1 é quem fala com o site."
+  echo "Deixa o Ollama aberto. Mini 1 é a porta."
 fi
