@@ -155,16 +155,13 @@ function Checkout() {
                       number,
                       apt,
                       uf,
-                      cart: cart.map((i) => {
-                        const p = getProduct(i.slug);
-                        return {
-                          slug: i.slug,
-                          size: i.size,
-                          qty: i.qty,
-                          title: p ? `${p.brand} ${p.shortName} ${i.size}` : i.slug,
-                          price: p ? salePrice(p.price, p.compareAt) : 0,
-                        };
-                      }),
+                      cart: totals.lines.map(({ item, product, line }) => ({
+                          slug: item.slug,
+                          size: item.size,
+                          qty: item.qty,
+                          title: product ? `${product.brand} ${product.shortName} ${item.size}` : item.slug,
+                          price: item.qty ? Number((line / item.qty).toFixed(2)) : 0,
+                        })),
                     }),
                   });
                   const res = (await r.json().catch(() => ({}))) as { ok?: boolean; url?: string; error?: string };
@@ -173,9 +170,15 @@ function Checkout() {
                     return;
                   }
                   setPayErr(
-                    res.error === "mp-token"
-                      ? "PIX ainda subindo. Use o WhatsApp da shopper."
-                      : res.error || "Mercado Pago não abriu. Shopper no WhatsApp.",
+                    res.url
+                      ? ""
+                      : res.error === "mp-token"
+                        ? "PIX ainda subindo. Use o WhatsApp da shopper."
+                        : res.error === "dados"
+                          ? "Confira CPF e WhatsApp."
+                          : res.error === "sacola"
+                            ? "Sacola sem preço. WhatsApp da shopper."
+                            : res.error || `Mercado Pago não abriu (${r.status}). Shopper no WhatsApp.`,
                   );
                 } catch {
                   setPayErr("Mercado Pago não abriu. Shopper no WhatsApp.");

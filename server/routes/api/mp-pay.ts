@@ -1,7 +1,8 @@
-import { defineEventHandler, readBody, setResponseStatus } from "h3";
+import { defineEventHandler, readBody, setResponseStatus, setHeader } from "h3";
 
 const SITE = "https://www.glauciasampaio.com";
 const FREE_SHIPPING_FROM = 1000;
+const SHOP = "https://glaucia-sampaio-3.myshopify.com";
 
 function mpToken() {
   const env = process.env as Record<string, string | undefined>;
@@ -14,7 +15,31 @@ function mpToken() {
   );
 }
 
+async function shopifyPrice(slug: string) {
+  const handle = slug.replace(/^\/+|\/+$/g, "");
+  if (!handle) return 0;
+  try {
+    const r = await fetch(`${SHOP}/products/${encodeURIComponent(handle)}.json`, {
+      headers: { Accept: "application/json", "User-Agent": "GlauciaSampaioBoutique/1.0" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) return 0;
+    const json = (await r.json()) as { product?: { title?: string; variants?: { price?: string }[] } };
+    const n = Number.parseFloat(json.product?.variants?.[0]?.price || "0");
+    return Number.isFinite(n) ? n : 0;
+  } catch {
+    return 0;
+  }
+}
+
 export default defineEventHandler(async (event) => {
+  setHeader(event, "Access-Control-Allow-Origin", SITE);
+  setHeader(event, "Access-Control-Allow-Methods", "POST,OPTIONS");
+  setHeader(event, "Access-Control-Allow-Headers", "Content-Type");
+  if (event.method === "OPTIONS") {
+    setResponseStatus(event, 204);
+    return null;
+  }
   if (event.method !== "POST") {
     setResponseStatus(event, 405);
     return { ok: false };
@@ -50,7 +75,8 @@ export default defineEventHandler(async (event) => {
   const items: { title: string; quantity: number; unit_price: number; currency_id: "BRL" }[] = [];
   let subtotal = 0;
   for (const line of data.cart || []) {
-    const unit = Number(line.price || 0);
+    let unit = Number(line.price || 0);
+    if (!unit && line.slug) unit = await shopifyPrice(line.slug);
     if (!unit) continue;
     const qty = Math.max(1, Number(line.qty || 1));
     subtotal += unit * qty;
