@@ -5,6 +5,7 @@ import { FLASH_CODE, flashActive } from "@/lib/flash";
 import { WELCOME_CODE } from "@/lib/catalog";
 import { formatBRL } from "@/lib/format";
 import { createMercadoPagoPreference } from "@/lib/mercadopago.functions";
+import { shopifyCartUrl } from "@/lib/shopify";
 import { cartTotals, useShop } from "@/lib/store";
 import { pageHead } from "@/lib/seo";
 
@@ -45,6 +46,7 @@ function validCpf(s: string) {
 
 function Checkout() {
   const cart = useShop((s) => s.cart);
+  const store = useShop((s) => s.shopifyStore);
   const welcomeApplied = useShop((s) => s.welcomeApplied);
   const totals = useMemo(() => cartTotals(cart, welcomeApplied), [cart, welcomeApplied]);
   const [name, setName] = useState("");
@@ -149,11 +151,25 @@ function Checkout() {
                     window.location.assign(res.url);
                     return;
                   }
-                  setPayErr(
-                    res.error === "mp-token"
-                      ? "Falta a chave do Mercado Pago na conta."
-                      : "Não abriu o PIX. Tente de novo ou fale com a shopper.",
+                  const shop = shopifyCartUrl(
+                    store,
+                    cart,
+                    flashActive() ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : null,
+                    {
+                      firstName: name.trim() || undefined,
+                      phone: onlyDigits(phone) || undefined,
+                      zip: onlyDigits(cep) || undefined,
+                      address1: street || undefined,
+                      city: city || undefined,
+                      province: uf || undefined,
+                      cpf: validCpf(cpf) ? formatCpf(cpf) : undefined,
+                    },
                   );
+                  if (shop) {
+                    window.location.assign(shop);
+                    return;
+                  }
+                  setPayErr("Não abriu o PIX. Fale com a shopper.");
                   setBusy(false);
                 })
                 .catch(() => {
