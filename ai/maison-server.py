@@ -7,6 +7,7 @@ import os
 import threading
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PORT = int(os.environ.get("PORT", "8787"))
@@ -91,13 +92,32 @@ def backends() -> list[str]:
     return order
 
 
-def ping(base: str) -> dict:
+def ping(base: str, timeout: float = 0.8) -> dict:
     try:
-        tags = ollama_json(base, "/api/tags", timeout=4)
+        tags = ollama_json(base, "/api/tags", timeout=timeout)
         names = [m.get("name") for m in tags.get("models") or []]
         return {"ok": True, "url": base, "models": names}
     except Exception as e:
         return {"ok": False, "url": base, "error": str(e)[:80]}
+
+
+def live_urls() -> list[str]:
+    if not URLS:
+        return []
+    with ThreadPoolExecutor(max_workers=len(URLS)) as ex:
+        rows = list(ex.map(lambda u: ping(u, 0.8), URLS))
+    return [r["url"] for r in rows if r["ok"]]
+
+
+def backends() -> list[str]:
+    live = live_urls()
+    pool = live or URLS
+    global _cursor
+    with _lock:
+        n = len(pool)
+        order = pool[_cursor % n :] + pool[: _cursor % n] if n else []
+        _cursor = (_cursor + 1) % n if n else 0
+    return order
 
 
 def chat(system: str, prompt: str) -> str:
@@ -174,7 +194,8 @@ class Handler(BaseHTTPRequestHandler):
         if self.path != "/health":
             self._send(404, {"ok": False})
             return
-        nodes = [ping(u) for u in URLS]
+        with ThreadPoolExecutor(max_workers=max(1, len(URLS))) as ex:
+            nodes = list(ex.map(lambda u: ping(u, 0.8), URLS))
         self._send(
             200 if any(n["ok"] for n in nodes) else 503,
             {"ok": any(n["ok"] for n in nodes), "model": MODEL, "exclusive": ["site", "caixarcs"], "nodes": nodes},
