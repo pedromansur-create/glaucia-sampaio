@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, whatsappUrl } from "@/lib/catalog";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, whatsappUrl, subscribeCatalog, catalogStamp } from "@/lib/catalog";
 import { FLASH_CODE } from "@/lib/flash";
 import { WELCOME_CODE } from "@/lib/catalog";
 import { formatBRL } from "@/lib/format";
@@ -43,9 +43,10 @@ function validCpf(s: string) {
 }
 
 function Checkout() {
+  const stamp = useSyncExternalStore(subscribeCatalog, catalogStamp, catalogStamp);
   const cart = useShop((s) => s.cart);
   const welcomeApplied = useShop((s) => s.welcomeApplied);
-  const totals = useMemo(() => cartTotals(cart, welcomeApplied), [cart, welcomeApplied]);
+  const totals = useMemo(() => cartTotals(cart, welcomeApplied), [cart, welcomeApplied, stamp]);
   const [name, setName] = useState("");
   const [cpf, setCpf] = useState("");
   const [phone, setPhone] = useState("");
@@ -98,24 +99,34 @@ function Checkout() {
       <h1 className="text-center text-[11px] tracking-[0.2em] uppercase">Pagar</h1>
 
       {cart.length === 0 ? (
-        <p className="mt-10 text-center text-sm text-muted">Sacola vazia.</p>
+        <div className="mt-10 text-center">
+          <p className="text-sm text-muted">Sacola vazia.</p>
+          <a
+            href={whatsappUrl("Olá, quero ajuda para escolher uma peça.")}
+            className="mt-8 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.2em] text-paper uppercase"
+          >
+            WhatsApp da shopper
+          </a>
+        </div>
       ) : (
         <>
           <ul className="mt-8 space-y-4">
-            {totals.lines.map(({ item, product, line }) =>
-              product ? (
-                <li key={`${item.slug}${item.size}`} className="flex gap-3 text-sm">
+            {totals.lines.map(({ item, product, line }) => (
+              <li key={`${item.slug}${item.size}`} className="flex gap-3 text-sm">
+                {product?.images[0] ? (
                   <img src={product.images[0]} alt="" className="h-16 w-12 object-cover object-top" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate uppercase tracking-[0.04em]">{product.shortName}</p>
-                    <p className="mt-1 text-[11px] text-muted">
-                      {item.size} · {item.qty}
-                    </p>
-                  </div>
-                  <span className="tabular-nums">{formatBRL(line)}</span>
-                </li>
-              ) : null,
-            )}
+                ) : (
+                  <span className="h-16 w-12 bg-line/40" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate uppercase tracking-[0.04em]">{product?.shortName || item.slug}</p>
+                  <p className="mt-1 text-[11px] text-muted">
+                    {item.size} · {item.qty}
+                  </p>
+                </div>
+                <span className="tabular-nums">{formatBRL(line)}</span>
+              </li>
+            ))}
           </ul>
 
           {totals.discount > 0 && (
@@ -250,22 +261,23 @@ function Checkout() {
 
             {payErr ? <p className="text-[11px] text-muted">{payErr}</p> : null}
 
-            <a
-              href={whatsappUrl(
-                `Olá, sou ${name || "—"}. CPF ${cpf || "—"}. WhatsApp ${phone || "—"}. ${street || ""} ${number || ""} ${apt ? `apto ${apt}` : ""} ${city || ""} ${uf || ""} CEP ${cep || ""}. Quero fechar: ${orderText}. Total ${formatBRL(totals.total)}.`,
-              )}
-              className="mt-6 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.2em] text-paper uppercase"
-            >
-              Fechar no WhatsApp
-            </a>
             <button
               type="submit"
               disabled={busy || !canPay}
-              className="mt-3 flex h-12 w-full items-center justify-center border border-line text-[11px] tracking-[0.2em] uppercase disabled:opacity-30"
+              className="mt-6 flex h-12 w-full items-center justify-center border border-line text-[11px] tracking-[0.2em] uppercase disabled:opacity-30"
             >
               {busy ? "…" : "PIX ou cartão"}
             </button>
           </form>
+
+          <a
+            href={whatsappUrl(
+              `Olá, sou ${name || "—"}. CPF ${cpf || "—"}. WhatsApp ${phone || "—"}. ${street || ""} ${number || ""} ${apt ? `apto ${apt}` : ""} ${city || ""} ${uf || ""} CEP ${cep || ""}. Quero fechar: ${orderText}. Total ${formatBRL(totals.total)}.`,
+            )}
+            className="mt-3 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.2em] text-paper uppercase"
+          >
+            Fechar no WhatsApp
+          </a>
           <p className="mt-8 text-center text-[10px] leading-relaxed text-muted">
             PIX ou cartão em até 10x. Conta Canário Amarelo. CPF na nota. Sem criar conta. 7 dias. {BOUTIQUE.cnpj}
           </p>
