@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSyncExternalStore } from "react";
-import { ProductCard } from "@/components/shell";
+import { ProductGrid } from "@/components/shell";
 import { catalogStamp, occasions, productsForOccasion, subscribeCatalog } from "@/lib/catalog";
 import { pageHead } from "@/lib/seo";
 
@@ -39,11 +39,7 @@ function OccasionPage() {
   return (
     <div className="px-1 pb-16 pt-2 md:px-2">
       <h1 className="sr-only">{o.title}</h1>
-      <div className="grid grid-cols-2 gap-1 md:grid-cols-3">
-        {list.map((p) => (
-          <ProductCard key={p.slug} slug={p.slug} product={p} />
-        ))}
-      </div>
+      <ProductGrid products={list} />
     </div>
   );
 }
