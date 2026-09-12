@@ -42,7 +42,12 @@ export default defineEventHandler(async (event) => {
     return {
       ok: true,
       webhook: `${SITE}/api/mercadopago`,
-      token: Boolean(process.env.MERCADO_PAGO_ACCESS_TOKEN?.trim()),
+      token: Boolean(
+        process.env.MERCADO_PAGO_ACCESS_TOKEN?.trim() ||
+          process.env.MERCADOPAGO_ACCESS_TOKEN?.trim() ||
+          process.env.MP_ACCESS_TOKEN?.trim() ||
+          process.env.MERCADO_PAGO_TOKEN?.trim(),
+      ),
       secret: Boolean(process.env.MERCADO_PAGO_WEBHOOK_SECRET?.trim()),
     };
   }

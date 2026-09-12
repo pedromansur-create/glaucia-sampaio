@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, variantIdFor, whatsappUrl } from "@/lib/catalog";
-import { FLASH_CODE, flashActive } from "@/lib/flash";
+import { FLASH_CODE, salePrice } from "@/lib/flash";
 import { WELCOME_CODE } from "@/lib/catalog";
 import { formatBRL } from "@/lib/format";
 import { createMercadoPagoPreference } from "@/lib/mercadopago.functions";
@@ -190,7 +190,16 @@ function Checkout() {
                       city,
                       street,
                       uf,
-                      cart: cart.map((i) => ({ slug: i.slug, size: i.size, qty: i.qty })),
+                      cart: cart.map((i) => {
+                        const p = getProduct(i.slug);
+                        return {
+                          slug: i.slug,
+                          size: i.size,
+                          qty: i.qty,
+                          title: p ? `${p.brand} ${p.shortName} ${i.size}` : i.slug,
+                          price: p ? salePrice(p.price, p.compareAt) : 0,
+                        };
+                      }),
                     },
                   });
                   if (res.ok && res.url) {
@@ -199,8 +208,8 @@ function Checkout() {
                   }
                   setPayErr(
                     res.error === "mp-token"
-                      ? "PIX Mercado Pago ainda sem chave. Coloca MERCADO_PAGO_ACCESS_TOKEN no Vercel."
-                      : "Mercado Pago não abriu. Shopper no WhatsApp.",
+                      ? "Falta a chave MERCADO_PAGO_ACCESS_TOKEN no Vercel (Production). Salva e Redeploy."
+                      : res.error || "Mercado Pago não abriu. Shopper no WhatsApp.",
                   );
                 } catch {
                   setPayErr("Mercado Pago não abriu. Shopper no WhatsApp.");
