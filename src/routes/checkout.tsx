@@ -53,6 +53,8 @@ function Checkout() {
   const [cep, setCep] = useState("");
   const [city, setCity] = useState("");
   const [street, setStreet] = useState("");
+  const [number, setNumber] = useState("");
+  const [apt, setApt] = useState("");
   const [uf, setUf] = useState("");
   const [cepErr, setCepErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -86,7 +88,11 @@ function Checkout() {
   }
 
   const canPay =
-    Boolean(name.trim()) && validCpf(cpf) && onlyDigits(phone).length >= 10 && onlyDigits(cep).length === 8;
+    Boolean(name.trim()) &&
+    validCpf(cpf) &&
+    onlyDigits(phone).length >= 10 &&
+    onlyDigits(cep).length === 8 &&
+    Boolean(number.trim());
 
   return (
     <div className="mx-auto max-w-md px-6 pb-20 pt-8">
@@ -145,6 +151,8 @@ function Checkout() {
                       cep,
                       city,
                       street,
+                      number,
+                      apt,
                       uf,
                       cart: cart.map((i) => {
                         const p = getProduct(i.slug);
@@ -229,6 +237,29 @@ function Checkout() {
                 {city} {uf}
               </p>
             ) : null}
+            <div className="grid grid-cols-2 gap-6">
+              <label className="block">
+                <span className="text-[10px] tracking-[0.16em] text-muted uppercase">Número</span>
+                <input
+                  required
+                  value={number}
+                  onChange={(e) => setNumber(e.target.value)}
+                  inputMode="numeric"
+                  autoComplete="address-line2"
+                  placeholder="120"
+                  className="mt-2 h-11 w-full border-b border-line bg-transparent text-sm tracking-[0.06em] outline-none"
+                />
+              </label>
+              <label className="block">
+                <span className="text-[10px] tracking-[0.16em] text-muted uppercase">Apto</span>
+                <input
+                  value={apt}
+                  onChange={(e) => setApt(e.target.value)}
+                  placeholder="opcional"
+                  className="mt-2 h-11 w-full border-b border-line bg-transparent text-sm tracking-[0.06em] outline-none"
+                />
+              </label>
+            </div>
             {cepErr ? <p className="text-[11px] text-muted">{cepErr}</p> : null}
 
             {payErr ? <p className="text-[11px] text-muted">{payErr}</p> : null}
@@ -244,7 +275,7 @@ function Checkout() {
 
           <a
             href={whatsappUrl(
-              `Olá, sou ${name || "—"}. CPF ${cpf || "—"}. WhatsApp ${phone || "—"}. CEP ${cep || "—"}. Quero fechar: ${orderText}. Total ${formatBRL(totals.total)}.`,
+              `Olá, sou ${name || "—"}. CPF ${cpf || "—"}. WhatsApp ${phone || "—"}. ${street || ""} ${number || ""} ${apt ? `apto ${apt}` : ""} ${city || ""} ${uf || ""} CEP ${cep || ""}. Quero fechar: ${orderText}. Total ${formatBRL(totals.total)}.`,
             )}
             className="mt-5 block text-center text-[11px] tracking-[0.18em] text-muted uppercase underline"
           >

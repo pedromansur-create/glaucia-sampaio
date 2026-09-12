@@ -21,6 +21,8 @@ const Input = z.object({
   cep: z.string().optional(),
   city: z.string().optional(),
   street: z.string().optional(),
+  number: z.string().optional(),
+  apt: z.string().optional(),
   uf: z.string().optional(),
   cart: z.array(
     z.object({
@@ -70,6 +72,11 @@ export const createMercadoPagoPreference = createServerFn({ method: "POST" })
         last_name: data.name.split(" ").slice(1).join(" ") || data.name.split(" ")[0],
         identification: { type: "CPF", number: cpf },
         phone: { area_code: phone.slice(0, 2), number: phone.slice(2) },
+        address: {
+          zip_code: (data.cep || "").replace(/\D/g, ""),
+          street_name: [data.street, data.number, data.apt].filter(Boolean).join(", "),
+          street_number: data.number || "",
+        },
       },
       payment_methods: { installments: 10 },
       statement_descriptor: "GLAUCIA SAMPAIO",
@@ -79,7 +86,16 @@ export const createMercadoPagoPreference = createServerFn({ method: "POST" })
         failure: `${SITE}/checkout?status=falhou`,
       },
       notification_url: `${SITE}/api/mercadopago`,
-      metadata: { cpf, phone, name: data.name, cep: data.cep, city: data.city, uf: data.uf },
+      metadata: {
+        cpf,
+        phone,
+        name: data.name,
+        cep: data.cep,
+        city: data.city,
+        uf: data.uf,
+        number: data.number,
+        apt: data.apt,
+      },
       external_reference: `gs-${Date.now()}`,
     };
 
