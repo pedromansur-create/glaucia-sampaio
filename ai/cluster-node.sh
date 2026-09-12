@@ -31,6 +31,11 @@ if ! command -v ollama >/dev/null 2>&1; then
 fi
 
 launchctl setenv OLLAMA_HOST "0.0.0.0:11434"
+launchctl setenv OLLAMA_FLASH_ATTENTION "1"
+launchctl setenv OLLAMA_KV_CACHE_TYPE "q8_0"
+launchctl setenv OLLAMA_KEEP_ALIVE "24h"
+launchctl setenv OLLAMA_NUM_PARALLEL "1"
+launchctl setenv OLLAMA_MAX_LOADED_MODELS "1"
 killall Ollama 2>/dev/null || true
 open -a Ollama 2>/dev/null || true
 sleep 3

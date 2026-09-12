@@ -3,3 +3,5 @@ PARAMETER temperature 0.3
 PARAMETER top_p 0.8
 PARAMETER num_ctx 2048
 PARAMETER num_predict 280
+PARAMETER num_batch 256
+PARAMETER num_gpu 99
