@@ -277,12 +277,12 @@ function Checkout() {
             href={whatsappUrl(
               `Olá, sou ${name || "—"}. CPF ${cpf || "—"}. WhatsApp ${phone || "—"}. ${street || ""} ${number || ""} ${apt ? `apto ${apt}` : ""} ${city || ""} ${uf || ""} CEP ${cep || ""}. Quero fechar: ${orderText}. Total ${formatBRL(totals.total)}.`,
             )}
-            className="mt-5 block text-center text-[11px] tracking-[0.18em] text-muted uppercase underline"
+            className="mt-3 flex h-12 w-full items-center justify-center border border-line text-[11px] tracking-[0.2em] uppercase"
           >
-            Prefiro a shopper
+            Fechar no WhatsApp
           </a>
           <p className="mt-8 text-center text-[10px] leading-relaxed text-muted">
-            PIX Mercado Pago na conta RCS. CPF na nota. Sem criar conta. 10x. 7 dias. {BOUTIQUE.cnpj}
+            PIX Canário Amarelo. Ou shopper no WhatsApp. CPF na nota. Sem criar conta. 10x. 7 dias. {BOUTIQUE.cnpj}
           </p>
         </>
       )}
