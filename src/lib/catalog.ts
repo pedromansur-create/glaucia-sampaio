@@ -904,33 +904,66 @@ export function searchProducts(q: string, herSize?: string) {
   const n = fold(raw);
   const pool = vitrineProducts();
   const sizeTok = n.match(/\b(pp|p|m|g|gg|34|36|38|40|42)\b/);
-  const size = sizeTok ? sizeTok[1].toUpperCase().replace("34", "PP").replace("36", "P").replace("38", "M").replace("40", "G").replace("42", "GG") : herSize;
-  const occ = inferOccasions([], "", raw);
-  const wantWhite = /branco|white|off|nude|marfim|cru|palha|bege|ivory/.test(n);
-  const wantNight = /noite|gala|festa|paete|brilho|bordado/.test(n);
+  const size = sizeTok
+    ? sizeTok[1].toUpperCase().replace("34", "PP").replace("36", "P").replace("38", "M").replace("40", "G").replace("42", "GG")
+    : herSize;
+
+  const wantWhite = /all\s*white|branco|off\s*white|offwhite|marfim|nude|cru|palha|bege|ivory|champagne/.test(n);
+  const wantNight = /noite|gala|festa|formatura|reveillon|paete|pailete|brilho|bordado/.test(n);
+  const wantWedding = /madrinha|casamento|civil|igreja|noiva/.test(n);
+  const wantDay = /dia|almoço|almoco|batizado|cha de/.test(n);
   const wantDress = /vestido/.test(n);
-  const wantSale = /sale|arquivo|desconto/.test(n);
+  const wantSet = /conjunto/.test(n);
+  const wantSkirt = /saia/.test(n);
+  const wantTop = /blusa|top|camisa/.test(n);
+  const wantSale = /sale|arquivo|desconto|promo/.test(n);
+  const wantLong = /longo|mullet/.test(n);
+  const wantMidi = /midi/.test(n);
+  const wantShort = /curto/.test(n);
+  const brandWant =
+    /fabulous|fabulos/.test(n) ? "fabulous" : /agilit/.test(n) ? "agilit" : /skazi/.test(n) ? "skazi" : /zen/.test(n) ? "zen" : "";
+  const words = n
+    .split(/\s+/)
+    .filter((x) => x.length > 1 && !/^(de|da|do|das|dos|para|com|uma|um|pra|o|a|e|em|no|na|me|meu|minha|pp|p|m|g|gg)$/.test(x));
+
   const scored = pool.map((p) => {
-    const hay = fold([p.name, p.brand, p.shortName, p.collection, p.fabric, p.composition, ...p.occasions].join(" "));
+    const hay = fold(
+      [p.name, p.brand, p.shortName, p.collection, p.fabric, p.composition, p.category, p.slug, ...(p.occasions ?? [])].join(" "),
+    );
     let s = 0;
-    for (const w of n.split(/\s+/).filter((x) => x.length > 2 && !/^(pp|para|com|uma|pra)$/.test(x))) {
-      if (hay.includes(w)) s += 3;
+    for (const w of words) {
+      if (hay.includes(w)) s += 4;
+      else if (w.length > 3 && hay.split(/\s+/).some((h) => h.startsWith(w.slice(0, 4)))) s += 2;
     }
-    if (occ.some((o) => p.occasions.includes(o))) s += 8;
-    if (wantWhite && /branco|white|off|nude|marfim|cru|palha|bege/.test(hay)) s += 6;
-    if (wantNight && p.occasions.includes("eventos-noturnos")) s += 5;
-    if (wantDress && p.category === "vestido") s += 2;
-    if (wantSale && p.compareAt && p.compareAt > p.price) s += 4;
+    if (wantWedding && (p.occasions.includes("madrinhas") || p.occasions.includes("casamento-dia") || p.category === "vestido"))
+      s += 10;
+    if (wantWhite && (p.occasions.includes("all-white") || /branco|white|off|nude|marfim|cru|palha|bege|ivory/.test(hay))) s += 12;
+    if (wantNight && (p.occasions.includes("eventos-noturnos") || /paete|brilho|tule|bordado|festa/.test(hay))) s += 8;
+    if (wantDay && p.occasions.includes("casamento-dia")) s += 6;
+    if (wantDress && p.category === "vestido") s += 8;
+    if (wantDress && p.category !== "vestido" && p.category !== "conjunto") s -= 10;
+    if (wantSet && p.category === "conjunto") s += 10;
+    if (wantSkirt && p.category === "saia") s += 10;
+    if (wantTop && p.category === "blusa") s += 10;
+    if (wantSale && p.compareAt && p.compareAt > p.price) s += 8;
+    if (wantLong && /longo|mullet/.test(hay)) s += 6;
+    if (wantMidi && /midi/.test(hay)) s += 6;
+    if (wantShort && /curto/.test(hay)) s += 6;
+    if (brandWant && fold(p.brand).includes(brandWant)) s += 14;
+    if (brandWant && !fold(p.brand).includes(brandWant)) s -= 8;
     if (size) {
       const on = sizeOnHand(p.shopifyHandle ?? p.slug, size);
       if (on == null) s += 1;
-      else if (on > 0) s += 5;
-      else s -= 8;
+      else if (on > 0) s += 6;
+      else s -= 10;
     }
+    if (p.collection === "Verão 27") s += 2;
     return { p, s };
   });
-  const hit = scored.filter((x) => x.s > 0).sort((a, b) => b.s - a.s).map((x) => x.p);
-  return hit.length ? hit : pool.filter((p) => fold(`${p.name} ${p.brand}`).includes(n.split(/\s+/)[0] ?? n));
+  return scored
+    .filter((x) => x.s >= 4)
+    .sort((a, b) => b.s - a.s)
+    .map((x) => x.p);
 }
 
 export function relatedProducts(product: Product, limit = 4) {

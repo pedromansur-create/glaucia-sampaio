@@ -357,7 +357,7 @@ function SearchPanel() {
   const setOpen = useShop((s) => s.setSearchOpen);
   const herSize = useShop((s) => s.herSize);
   const [q, setQ] = useState("");
-  const results = searchProducts(q, herSize).slice(0, 8);
+  const results = searchProducts(q, herSize).slice(0, 12);
   return (
     <aside className={cn("fixed inset-0 z-[60]", open ? "visible pointer-events-auto" : "invisible pointer-events-none")}>
       <button
@@ -377,7 +377,7 @@ function SearchPanel() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Madrinha de dia, P"
+            placeholder="vestido madrinha, all white, P"
             className="h-12 flex-1 bg-transparent text-lg outline-none"
           />
           <button type="button" onClick={() => setOpen(false)} className="grid size-11 place-items-center">
