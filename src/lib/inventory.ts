@@ -31,6 +31,24 @@ export function canonSize(raw: string): Size | "" {
   return SIZE_CANON[n] ?? "";
 }
 
+export function sizeAndColor(v: {
+  option1?: string | null;
+  option2?: string | null;
+  size?: string;
+  color?: string;
+}) {
+  if (v.size) {
+    return { size: canonSize(v.size) || v.size.trim() || "U", color: (v.color || "").trim() };
+  }
+  const a = String(v.option1 || "").trim();
+  const b = String(v.option2 || "").trim();
+  const ca = canonSize(a);
+  const cb = canonSize(b);
+  if (cb && !ca) return { size: cb, color: a };
+  if (ca) return { size: ca, color: b };
+  return { size: a || "U", color: b };
+}
+
 const seed = new Map((raw.products as unknown as StockEntry[]).map((p) => [p.handle, p]));
 let live: Map<string, StockEntry> | null = null;
 
@@ -53,9 +71,7 @@ export function stockFromVariants(
   const sizes: Record<string, number> = {};
   const lines: StockLine[] = [];
   for (const v of variants) {
-    const rawSize = String(v.size || v.option1 || "").trim() || "U";
-    const size = canonSize(rawSize) || rawSize;
-    const color = String(v.color || v.option2 || "").trim();
+    const { size, color } = sizeAndColor(v);
     const qty =
       typeof v.inventory_quantity === "number" ? Math.max(0, v.inventory_quantity) : v.available ? 1 : 0;
     lines.push({ size, color, qty });

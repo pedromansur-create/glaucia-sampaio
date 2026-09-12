@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { inferOccasions, SIZES, type Product } from "./catalog";
-import { canonSize } from "./inventory";
+import { canonSize, sizeAndColor } from "./inventory";
 import {
   DEFAULT_SHOPIFY_STORE,
   SHOPIFY_SLUG_BY_HANDLE,
@@ -47,13 +47,16 @@ function money(v: number | string | null | undefined) {
 function toLive(store: string, raw: RawProduct): ShopifyProductLive {
   const sizeOption = raw.options?.find((o) => /tamanho|size/i.test(o.name));
   const colorOption = raw.options?.find((o) => /cor|color/i.test(o.name));
-  const variants: ShopifyVariantLive[] = raw.variants.map((v) => ({
-    id: v.id,
-    size: v.option1 ?? "",
-    color: v.option2 ?? v.option1 ?? "",
-    available: Boolean(v.available),
-    price: money(v.price),
-  }));
+  const variants: ShopifyVariantLive[] = raw.variants.map((v) => {
+    const sc = sizeAndColor(v);
+    return {
+      id: v.id,
+      size: sc.size,
+      color: sc.color,
+      available: Boolean(v.available),
+      price: money(v.price),
+    };
+  });
   return {
     handle: raw.handle,
     title: raw.title,
@@ -114,9 +117,7 @@ function mapCatalogProduct(raw: RawProduct): Product {
   const season = seasonOf(handle, tags, raw.title);
   const isVerao27 = season === "Verão 27";
   const sizeSet = [
-    ...new Set(
-      raw.variants.map((v) => canonSize(v.option1 ?? "")).filter((s): s is NonNullable<typeof s> => Boolean(s)),
-    ),
+    ...new Set(raw.variants.map((v) => sizeAndColor(v).size).filter((s) => Boolean(canonSize(s) || s))),
   ];
   const sizes = SIZES.filter((s) => sizeSet.includes(s));
   const hay = `${handle} ${tags.join(" ")} ${raw.title}`.toLowerCase();
@@ -144,7 +145,10 @@ function mapCatalogProduct(raw: RawProduct): Product {
     shopifyHandle: handle,
     shopifyVariants: raw.variants
       .filter((v) => v.id)
-      .map((v) => ({ id: v.id, size: v.option1 ?? "", color: v.option2 ?? "", available: Boolean(v.available) })),
+      .map((v) => {
+        const sc = sizeAndColor(v);
+        return { id: v.id, size: sc.size, color: sc.color, available: Boolean(v.available) };
+      }),
   };
 }
 
@@ -158,7 +162,7 @@ export const listShopifyCatalog = createServerFn({ method: "GET" }).handler(asyn
   if (catalogCache && Date.now() - catalogCache.at < 20 * 1000) return catalogCache.items;
   const store = DEFAULT_SHOPIFY_STORE;
   const pages = await Promise.all(
-    [1, 2, 3].map(async (page) => {
+    [1, 2, 3, 4].map(async (page) => {
       const res = await fetch(`${shopifyOrigin(store)}/products.json?limit=250&page=${page}`, {
         headers: { Accept: "application/json", "User-Agent": "GlauciaSampaioBoutique/1.0" },
         signal: AbortSignal.timeout(12000),

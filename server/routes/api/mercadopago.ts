@@ -19,7 +19,11 @@ function validSignature(secret: string, signature: string, requestId: string, da
 }
 
 async function fetchPayment(id: string) {
-  const token = process.env.MERCADO_PAGO_ACCESS_TOKEN?.trim();
+  const token =
+    process.env.MERCADO_PAGO_ACCESS_TOKEN?.trim() ||
+    process.env.MERCADOPAGO_ACCESS_TOKEN?.trim() ||
+    process.env.MP_ACCESS_TOKEN?.trim() ||
+    process.env.MERCADO_PAGO_TOKEN?.trim();
   if (!token || !id) return null;
   const r = await fetch(`https://api.mercadopago.com/v1/payments/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
