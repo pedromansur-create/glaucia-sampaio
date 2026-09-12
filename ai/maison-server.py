@@ -105,7 +105,7 @@ def live_urls() -> list[str]:
     if not URLS:
         return []
     with ThreadPoolExecutor(max_workers=len(URLS)) as ex:
-        rows = list(ex.map(lambda u: ping(u, 0.8), URLS))
+        rows = list(ex.map(lambda u: ping(u, 2.5), URLS))
     return [r["url"] for r in rows if r["ok"]]
 
 
@@ -195,7 +195,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(404, {"ok": False})
             return
         with ThreadPoolExecutor(max_workers=max(1, len(URLS))) as ex:
-            nodes = list(ex.map(lambda u: ping(u, 0.8), URLS))
+            nodes = list(ex.map(lambda u: ping(u, 2.5), URLS))
         self._send(
             200 if any(n["ok"] for n in nodes) else 503,
             {"ok": any(n["ok"] for n in nodes), "model": MODEL, "exclusive": ["site", "caixarcs"], "nodes": nodes},
