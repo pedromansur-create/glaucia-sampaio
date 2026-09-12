@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { defineEventHandler, getHeader, readRawBody, setResponseStatus } from "h3";
 import { bustShopifyCatalogCache } from "../../../../src/lib/shopify.functions";
+import { bustStockCache } from "../stock";
 
 function safeEqual(a: string, b: string) {
   const left = Buffer.from(a);
@@ -36,6 +37,7 @@ export default defineEventHandler(async (event) => {
     !topic
   ) {
     bustShopifyCatalogCache();
+    bustStockCache();
   }
 
   setResponseStatus(event, 200);

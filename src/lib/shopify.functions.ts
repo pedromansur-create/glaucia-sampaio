@@ -155,20 +155,23 @@ export function bustShopifyCatalogCache() {
 }
 
 export const listShopifyCatalog = createServerFn({ method: "GET" }).handler(async () => {
-  if (catalogCache && Date.now() - catalogCache.at < 60 * 1000) return catalogCache.items;
+  if (catalogCache && Date.now() - catalogCache.at < 20 * 1000) return catalogCache.items;
   const store = DEFAULT_SHOPIFY_STORE;
-  const items: Product[] = [];
-  for (let page = 1; page <= 12; page += 1) {
-    const res = await fetch(`${shopifyOrigin(store)}/products.json?limit=50&page=${page}`, {
-      headers: { Accept: "application/json", "User-Agent": "GlauciaSampaioBoutique/1.0" },
-      signal: AbortSignal.timeout(12000),
-    });
-    if (!res.ok) break;
-    const json = (await res.json()) as { products?: RawProduct[] };
-    const batch = json.products ?? [];
-    if (!batch.length) break;
-    items.push(...batch.filter((p) => p.handle && p.variants?.length).map(mapCatalogProduct));
-  }
+  const pages = await Promise.all(
+    [1, 2, 3].map(async (page) => {
+      const res = await fetch(`${shopifyOrigin(store)}/products.json?limit=250&page=${page}`, {
+        headers: { Accept: "application/json", "User-Agent": "GlauciaSampaioBoutique/1.0" },
+        signal: AbortSignal.timeout(12000),
+      });
+      if (!res.ok) return [] as RawProduct[];
+      const json = (await res.json()) as { products?: RawProduct[] };
+      return json.products ?? [];
+    }),
+  );
+  const items = pages
+    .flat()
+    .filter((p) => p.handle && p.variants?.length)
+    .map(mapCatalogProduct);
   catalogCache = { at: Date.now(), items };
   return items;
 });

@@ -5,6 +5,10 @@ type Product = { handle: string; variants?: Variant[] };
 
 let cache: { at: number; body: Record<string, unknown> } | null = null;
 
+export function bustStockCache() {
+  cache = null;
+}
+
 async function pull() {
   const products: Product[] = [];
   for (let page = 1; page <= 8; page += 1) {
@@ -43,7 +47,7 @@ async function pull() {
 }
 
 export default defineEventHandler(async () => {
-  if (cache && Date.now() - cache.at < 60_000) return cache.body;
+  if (cache && Date.now() - cache.at < 15_000) return cache.body;
   const body = await pull();
   cache = { at: Date.now(), body };
   return body;

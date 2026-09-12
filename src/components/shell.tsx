@@ -27,15 +27,19 @@ export function Shell({ children }: { children: ReactNode }) {
       const hit = document.cookie.match(/(?:^|; )gs-size=([^;]+)/);
       if (hit?.[1]) useShop.getState().rememberSize(decodeURIComponent(hit[1]));
     }
-    listShopifyCatalog()
-      .then((items) => {
-        if (alive && items?.length) hydrateFromShopify(items);
-      })
-      .catch(() => {
-        loadLiveCatalog().catch(() => {});
-      });
+    const pull = () =>
+      listShopifyCatalog()
+        .then((items) => {
+          if (alive && items?.length) hydrateFromShopify(items);
+        })
+        .catch(() => {
+          if (alive) loadLiveCatalog().catch(() => {});
+        });
+    pull();
+    const tick = setInterval(pull, 45_000);
     return () => {
       alive = false;
+      clearInterval(tick);
     };
   }, []);
   return (
