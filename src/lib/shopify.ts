@@ -151,6 +151,7 @@ export function shopifyCartUrl(
     address1?: string;
     city?: string;
     province?: string;
+    cpf?: string;
   } | null,
 ) {
   const lines = cart
@@ -166,6 +167,10 @@ export function shopifyCartUrl(
   if (checkout?.address1) params.set("checkout[shipping_address][address1]", checkout.address1);
   if (checkout?.city) params.set("checkout[shipping_address][city]", checkout.city);
   if (checkout?.province) params.set("checkout[shipping_address][province]", checkout.province);
+  if (checkout?.cpf) {
+    params.set("attributes[CPF]", checkout.cpf);
+    params.set("note", `CPF ${checkout.cpf}`);
+  }
   params.set("checkout[shipping_address][country]", "Brazil");
   const qs = params.toString();
   const cartPath = `/cart/${lines.join(",")}${qs ? `?${qs}` : ""}`;

@@ -23,6 +23,26 @@ function onlyDigits(s: string) {
   return s.replace(/\D/g, "");
 }
 
+function formatCpf(s: string) {
+  const d = onlyDigits(s).slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+  if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
+
+function validCpf(s: string) {
+  const cpf = onlyDigits(s);
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+  const digits = cpf.split("").map(Number);
+  const check = (len: number) => {
+    const sum = digits.slice(0, len).reduce((a, n, i) => a + n * (len + 1 - i), 0);
+    const rest = (sum * 10) % 11;
+    return rest === 10 ? 0 : rest;
+  };
+  return check(9) === digits[9] && check(10) === digits[10];
+}
+
 function Checkout() {
   const navigate = useNavigate();
   const cart = useShop((s) => s.cart);
@@ -30,6 +50,7 @@ function Checkout() {
   const welcomeApplied = useShop((s) => s.welcomeApplied);
   const totals = useMemo(() => cartTotals(cart, welcomeApplied), [cart, welcomeApplied]);
   const [name, setName] = useState("");
+  const [cpf, setCpf] = useState("");
   const [phone, setPhone] = useState("");
   const [cep, setCep] = useState("");
   const [city, setCity] = useState("");
@@ -51,6 +72,7 @@ function Checkout() {
             address1: street || undefined,
             city: city || undefined,
             province: uf || undefined,
+            cpf: validCpf(cpf) ? formatCpf(cpf) : undefined,
           },
         )
       : null;
@@ -147,6 +169,21 @@ function Checkout() {
               />
             </label>
             <label className="block">
+              <span className="text-[10px] tracking-[0.2em] text-muted uppercase">CPF</span>
+              <input
+                required
+                value={cpf}
+                onChange={(e) => setCpf(formatCpf(e.target.value))}
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="000.000.000-00"
+                className="mt-1 h-12 w-full border-b border-line bg-transparent text-sm outline-none"
+              />
+            </label>
+            {cpf.length >= 14 && !validCpf(cpf) ? (
+              <p className="text-[11px] text-muted">CPF inválido</p>
+            ) : null}
+            <label className="block">
               <span className="text-[10px] tracking-[0.2em] text-muted uppercase">WhatsApp</span>
               <input
                 required
@@ -180,7 +217,13 @@ function Checkout() {
 
             <button
               type="submit"
-              disabled={!payUrl || !name.trim() || onlyDigits(phone).length < 10 || onlyDigits(cep).length !== 8}
+              disabled={
+                !payUrl ||
+                !name.trim() ||
+                !validCpf(cpf) ||
+                onlyDigits(phone).length < 10 ||
+                onlyDigits(cep).length !== 8
+              }
               className="mt-4 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.28em] text-paper uppercase disabled:opacity-30"
             >
               Pagar · PIX
@@ -189,14 +232,14 @@ function Checkout() {
 
           <a
             href={whatsappUrl(
-              `Olá, sou ${name || "—"}. WhatsApp ${phone || "—"}. CEP ${cep || "—"}. Quero fechar: ${orderText}. Total ${formatBRL(totals.total)}.`,
+              `Olá, sou ${name || "—"}. CPF ${cpf || "—"}. WhatsApp ${phone || "—"}. CEP ${cep || "—"}. Quero fechar: ${orderText}. Total ${formatBRL(totals.total)}.`,
             )}
             className="mt-5 block text-center text-[11px] tracking-[0.18em] text-muted uppercase underline"
           >
             Prefiro a shopper
           </a>
           <p className="mt-8 text-center text-[10px] leading-relaxed text-muted">
-            Sem criar conta. PIX primeiro. 10x. 7 dias. {BOUTIQUE.cnpj}
+            CPF na nota. Sem criar conta. PIX primeiro. 10x. 7 dias. {BOUTIQUE.cnpj}
           </p>
         </>
       )}
