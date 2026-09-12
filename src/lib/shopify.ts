@@ -143,13 +143,32 @@ export function shopifyCartUrl(
   store: string,
   cart: { variantId?: number; qty: number }[],
   discount?: string | null,
+  checkout?: {
+    email?: string;
+    firstName?: string;
+    phone?: string;
+    zip?: string;
+    address1?: string;
+    city?: string;
+    province?: string;
+  } | null,
 ) {
   const lines = cart
     .filter((i) => i.variantId)
     .map((i) => `${i.variantId}:${Math.max(1, i.qty)}`);
   if (!lines.length) return null;
   const origin = shopifyOrigin(store);
-  const cartPath = `/cart/${lines.join(",")}`;
+  const params = new URLSearchParams();
+  if (checkout?.email) params.set("checkout[email]", checkout.email);
+  if (checkout?.firstName) params.set("checkout[shipping_address][first_name]", checkout.firstName);
+  if (checkout?.phone) params.set("checkout[shipping_address][phone]", checkout.phone);
+  if (checkout?.zip) params.set("checkout[shipping_address][zip]", checkout.zip);
+  if (checkout?.address1) params.set("checkout[shipping_address][address1]", checkout.address1);
+  if (checkout?.city) params.set("checkout[shipping_address][city]", checkout.city);
+  if (checkout?.province) params.set("checkout[shipping_address][province]", checkout.province);
+  params.set("checkout[shipping_address][country]", "Brazil");
+  const qs = params.toString();
+  const cartPath = `/cart/${lines.join(",")}${qs ? `?${qs}` : ""}`;
   if (discount) {
     return `${origin}/discount/${encodeURIComponent(discount)}?redirect=${encodeURIComponent(cartPath)}`;
   }

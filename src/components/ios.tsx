@@ -2,9 +2,6 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Layers, ShoppingBag, Sparkles, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
-import { getProduct, WELCOME_CODE, whatsappUrl } from "@/lib/catalog";
-import { shopifyCartUrl, shopifyReadyCount } from "@/lib/shopify";
-import { FLASH_CODE, flashActive } from "@/lib/flash";
 import { useShop } from "@/lib/store";
 
 export function IosTabBar() {
@@ -118,36 +115,10 @@ export function IosInstallSheet() {
 
 export function ShopifyPayButton({ className }: { className?: string }) {
   const cart = useShop((s) => s.cart);
-  const store = useShop((s) => s.shopifyStore);
-  const welcomeApplied = useShop((s) => s.welcomeApplied);
-  const ready = shopifyReadyCount(cart);
-  const url = shopifyCartUrl(store, cart, flashActive() ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : null);
   if (cart.length === 0) return null;
-  if (!url || ready === 0) {
-    const text = cart
-      .map((i) => {
-        const p = getProduct(i.slug);
-        return `${p?.brand ?? ""} ${p?.shortName ?? i.slug} ${i.size}`.trim();
-      })
-      .join("; ");
-    return (
-      <a
-        href={whatsappUrl(`Olá, quero fechar: ${text}`)}
-        target="_blank"
-        rel="noreferrer"
-        className={cn(
-          "flex h-12 items-center justify-center rounded-pill bg-ink text-xs tracking-[0.2em] text-paper uppercase",
-          className,
-        )}
-      >
-        Fechar no WhatsApp
-      </a>
-    );
-  }
   return (
-    <a
-      href={url}
-      rel="noreferrer"
+    <Link
+      to="/checkout"
       data-cursor="on"
       className={cn(
         "flex h-12 items-center justify-center rounded-pill bg-ink text-xs tracking-[0.2em] text-paper uppercase",
@@ -155,6 +126,6 @@ export function ShopifyPayButton({ className }: { className?: string }) {
       )}
     >
       Pagar · PIX
-    </a>
+    </Link>
   );
 }
