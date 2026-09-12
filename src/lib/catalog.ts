@@ -745,6 +745,7 @@ function productFromSeed(raw: {
   compare: number | null;
   images: string[];
   occasions: string[];
+  variants?: { id?: number; size?: string; color?: string }[];
 }): Product {
   const title = raw.title.replace(/\s+COLE[CÇ][AÃ]O.*$/i, "").trim();
   const hay = `${raw.handle} ${raw.tags.join(" ")} ${raw.title}`.toLowerCase();
@@ -775,7 +776,7 @@ function productFromSeed(raw: {
     description: title,
     sku: raw.handle,
     shopifyHandle: raw.handle,
-    shopifyVariants: (raw as { variants?: { id?: number; size?: string; color?: string }[] }).variants
+    shopifyVariants: (raw.variants ?? (raw as { variants?: { id?: number; size?: string; color?: string }[] }).variants)
       ?.filter((v) => v.id)
       .map((v) => ({ id: Number(v.id), size: String(v.size || ""), color: String(v.color || "") })),
   };
@@ -795,10 +796,11 @@ export function variantIdFor(p: Product, size: string, color?: string) {
 
 export function hydrateFromShopify(items: Product[]) {
   if (!items.length) return;
+  const prev = hydrated ?? products;
   const merged = items.map((live) => {
-    const local = products.find(
-      (p) => p.slug === live.slug || live.slug.includes(p.slug) || live.shopifyHandle === p.slug,
-    );
+    const local =
+      prev.find((p) => p.slug === live.slug || live.slug.includes(p.slug) || p.shopifyHandle === live.shopifyHandle) ??
+      products.find((p) => p.slug === live.slug || live.shopifyHandle === p.slug);
     if (!local) return live;
     return {
       ...local,
@@ -818,6 +820,32 @@ export function hydrateFromShopify(items: Product[]) {
   });
   hydrated = merged;
   bumpCatalog();
+}
+
+export function isVitrine(p: Product) {
+  const img = p.images[0] ?? "";
+  if (!img || img.includes("hero-portrait") || img.includes("boutique")) return false;
+  if (p.price < 490) return false;
+  if (p.category === "praia") return false;
+  const house = /agilit|fabulous|zen|skazi|glaucia/i.test(`${p.brand} ${p.name}`);
+  if (p.collection === "Verão 27" || p.isNew) return true;
+  if (p.category === "vestido" && (house || p.price >= 690)) return true;
+  if (p.category === "conjunto" && p.price >= 690) return true;
+  return house && p.price >= 890;
+}
+
+export function vitrineProducts() {
+  return allProducts()
+    .filter(isVitrine)
+    .sort((a, b) => {
+      const rank = (p: Product) =>
+        (p.collection === "Verão 27" ? 40 : 0) +
+        (p.isNew ? 12 : 0) +
+        (p.category === "vestido" ? 8 : 0) +
+        (p.price >= 2000 ? 6 : p.price >= 1000 ? 3 : 0) +
+        (p.compareAt ? -8 : 0);
+      return rank(b) - rank(a);
+    });
 }
 
 export function allProducts() {
@@ -844,7 +872,7 @@ export function getProduct(slug: string) {
 }
 
 export function productsForOccasion(slug: string) {
-  const pool = allProducts();
+  const pool = vitrineProducts();
   const tagged = pool.filter((p) => p.occasions.includes(slug));
   if (tagged.length >= 6) return tagged;
   const extra = pool.filter((p) => {
@@ -861,7 +889,10 @@ export function productsForOccasion(slug: string) {
 
 export function productsForCollection(slug: string) {
   const col = collections.find((c) => c.slug === slug);
-  const pool = allProducts();
+  const sale = slug === "sale" || slug === "arquivo";
+  const pool = sale
+    ? allProducts().filter((p) => isVitrine(p) || (Boolean(p.compareAt && p.compareAt > p.price) && p.price >= 390 && (p.images[0] ?? "").includes("http")))
+    : vitrineProducts();
   if (!col) return pool;
   const list = pool.filter(col.filter);
   return list.length ? list : pool;
@@ -869,9 +900,9 @@ export function productsForCollection(slug: string) {
 
 export function searchProducts(q: string, herSize?: string) {
   const raw = q.trim();
-  if (!raw) return allProducts();
+  if (!raw) return vitrineProducts();
   const n = fold(raw);
-  const pool = allProducts();
+  const pool = vitrineProducts();
   const sizeTok = n.match(/\b(pp|p|m|g|gg|34|36|38|40|42)\b/);
   const size = sizeTok ? sizeTok[1].toUpperCase().replace("34", "PP").replace("36", "P").replace("38", "M").replace("40", "G").replace("42", "GG") : herSize;
   const occ = inferOccasions([], "", raw);
@@ -903,7 +934,7 @@ export function searchProducts(q: string, herSize?: string) {
 }
 
 export function relatedProducts(product: Product, limit = 4) {
-  const pool = allProducts().filter((p) => p.slug !== product.slug);
+  const pool = vitrineProducts().filter((p) => p.slug !== product.slug);
   const scored = pool
     .map((p) => ({
       p,
@@ -983,6 +1014,11 @@ export async function loadLiveCatalog() {
             : null,
           images,
           occasions: inferOccasions(tags, raw.product_type ?? "", raw.title),
+          variants: (raw.variants ?? []).map((v) => ({
+            id: Number((v as { id?: number }).id || 0),
+            size: v.option1 ?? "",
+            color: v.option2 ?? "",
+          })),
         }),
       );
       if (raw.variants?.length) stock.push(stockFromVariants(raw.handle, raw.variants));

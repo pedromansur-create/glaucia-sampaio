@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSyncExternalStore } from "react";
 import { ProductGrid } from "@/components/shell";
-import { allProducts, catalogStamp, subscribeCatalog } from "@/lib/catalog";
+import { catalogStamp, subscribeCatalog, vitrineProducts } from "@/lib/catalog";
 import { sizeOnHand } from "@/lib/inventory";
 import { useShop } from "@/lib/store";
 import { DEFAULT_DESC, DEFAULT_TITLE, collectionJsonLd, jsonLdScript, pageHead } from "@/lib/seo";
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/")({
 function Home() {
   useSyncExternalStore(subscribeCatalog, catalogStamp, catalogStamp);
   const herSize = useShop((s) => s.herSize);
-  const pool = allProducts();
+  const pool = vitrineProducts();
   const ranked = herSize
     ? [...pool].sort((a, b) => {
         const aq = sizeOnHand(a.shopifyHandle ?? a.slug, herSize);

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, whatsappUrl } from "@/lib/catalog";
+import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, variantIdFor, whatsappUrl } from "@/lib/catalog";
 import { FLASH_CODE, flashActive } from "@/lib/flash";
 import { WELCOME_CODE } from "@/lib/catalog";
 import { formatBRL } from "@/lib/format";
@@ -60,10 +60,15 @@ function Checkout() {
   const [busy, setBusy] = useState(false);
   const [payErr, setPayErr] = useState("");
   const [applePay, setApplePay] = useState(false);
+  const [mpReady, setMpReady] = useState(false);
 
   useEffect(() => {
     const Apple = (window as Window & { ApplePaySession?: { canMakePayments?: () => boolean } }).ApplePaySession;
     setApplePay(Boolean(Apple && (Apple.canMakePayments ? Apple.canMakePayments() : true)));
+    fetch("/api/mercadopago")
+      .then((r) => r.json() as Promise<{ token?: boolean }>)
+      .then((d) => setMpReady(Boolean(d.token)))
+      .catch(() => setMpReady(false));
   }, []);
 
   const orderText = cart
@@ -94,10 +99,14 @@ function Checkout() {
   }
 
   function shopifyPay() {
+    const lined = cart.map((i) => {
+      const p = getProduct(i.slug);
+      return { ...i, variantId: i.variantId ?? (p ? variantIdFor(p, i.size) : undefined) };
+    });
     const shop = shopifyCartUrl(
       store,
-      cart,
-      flashActive() ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : null,
+      lined,
+      flashActive() ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : WELCOME_CODE,
       {
         firstName: name.trim() || undefined,
         phone: onlyDigits(phone) || undefined,
@@ -162,6 +171,13 @@ function Checkout() {
               if (busy) return;
               setPayErr("");
               setBusy(true);
+              if (!mpReady) {
+                if (!shopifyPay()) {
+                  setPayErr("Não abriu o PIX. Fale com a shopper.");
+                  setBusy(false);
+                }
+                return;
+              }
               void createMercadoPagoPreference({
                 data: {
                   name: name.trim(),

@@ -27,12 +27,13 @@ export function Shell({ children }: { children: ReactNode }) {
       const hit = document.cookie.match(/(?:^|; )gs-size=([^;]+)/);
       if (hit?.[1]) useShop.getState().rememberSize(decodeURIComponent(hit[1]));
     }
-    loadLiveCatalog().catch(() => {});
     listShopifyCatalog()
       .then((items) => {
         if (alive && items?.length) hydrateFromShopify(items);
       })
-      .catch(() => {});
+      .catch(() => {
+        loadLiveCatalog().catch(() => {});
+      });
     return () => {
       alive = false;
     };
