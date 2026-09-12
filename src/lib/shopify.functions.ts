@@ -4,7 +4,9 @@ import { inferOccasions, SIZES, type Product } from "./catalog";
 import {
   DEFAULT_SHOPIFY_STORE,
   SHOPIFY_SLUG_BY_HANDLE,
+  matchShopifyVariant,
   normalizeStoreHost,
+  shopifyCartUrl,
   shopifyOrigin,
   type ShopifyProductLive,
   type ShopifyVariantLive,
@@ -163,6 +165,62 @@ export const listShopifyCatalog = createServerFn({ method: "GET" }).handler(asyn
   catalogCache = { at: Date.now(), items };
   return items;
 });
+
+export const startShopifyPay = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      cart: z.array(
+        z.object({
+          slug: z.string(),
+          handle: z.string().optional(),
+          size: z.string(),
+          qty: z.number(),
+          variantId: z.number().optional(),
+          color: z.string().optional(),
+        }),
+      ),
+      name: z.string(),
+      phone: z.string(),
+      cep: z.string().optional(),
+      cpf: z.string().optional(),
+      city: z.string().optional(),
+      street: z.string().optional(),
+      uf: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const store = DEFAULT_SHOPIFY_STORE;
+    const lined: { variantId: number; qty: number }[] = [];
+    for (const item of data.cart) {
+      let id = item.variantId && item.variantId > 0 ? item.variantId : 0;
+      if (!id) {
+        const handle = (item.handle || item.slug).replace(/[^a-z0-9-]/gi, "").toLowerCase();
+        const res = await fetch(`${shopifyOrigin(store)}/products/${handle}.js`, {
+          headers: { Accept: "application/json", "User-Agent": "GlauciaSampaioBoutique/1.0" },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (res.ok) {
+          const raw = (await res.json()) as RawProduct;
+          const live = toLive(store, raw);
+          const hit = matchShopifyVariant(live, item.size, item.color || "");
+          id = hit?.id || live.variants.find((v) => v.available)?.id || live.variants[0]?.id || 0;
+        }
+      }
+      if (id) lined.push({ variantId: id, qty: Math.max(1, item.qty) });
+    }
+    if (!lined.length) return { ok: false as const, error: "sacola" };
+    const url = shopifyCartUrl(store, lined, null, {
+      firstName: data.name.split(" ")[0] || data.name,
+      phone: data.phone,
+      zip: data.cep,
+      address1: data.street,
+      city: data.city,
+      province: data.uf,
+      cpf: data.cpf,
+    });
+    if (!url) return { ok: false as const, error: "sacola" };
+    return { ok: true as const, url };
+  });
 
 export const getShopifyProduct = createServerFn({ method: "GET" })
   .validator(

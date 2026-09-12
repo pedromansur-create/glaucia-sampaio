@@ -5,7 +5,7 @@ import { FLASH_CODE, flashActive } from "@/lib/flash";
 import { WELCOME_CODE } from "@/lib/catalog";
 import { formatBRL } from "@/lib/format";
 import { createMercadoPagoPreference } from "@/lib/mercadopago.functions";
-import { shopifyCartUrl } from "@/lib/shopify";
+import { startShopifyPay } from "@/lib/shopify.functions";
 import { cartTotals, useShop } from "@/lib/store";
 import { pageHead } from "@/lib/seo";
 
@@ -98,27 +98,35 @@ function Checkout() {
     }
   }
 
-  function shopifyPay() {
-    const lined = cart.map((i) => {
-      const p = getProduct(i.slug);
-      return { ...i, variantId: i.variantId ?? (p ? variantIdFor(p, i.size) : undefined) };
-    });
-    const shop = shopifyCartUrl(
-      store,
-      lined,
-      flashActive() ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : WELCOME_CODE,
-      {
-        firstName: name.trim() || undefined,
-        phone: onlyDigits(phone) || undefined,
-        zip: onlyDigits(cep) || undefined,
-        address1: street || undefined,
-        city: city || undefined,
-        province: uf || undefined,
+  function payShopify() {
+    return startShopifyPay({
+      data: {
+        cart: cart.map((i) => {
+          const p = getProduct(i.slug);
+          return {
+            slug: i.slug,
+            handle: p?.shopifyHandle ?? i.slug,
+            size: i.size,
+            qty: i.qty,
+            variantId: i.variantId ?? (p ? variantIdFor(p, i.size) : undefined),
+            color: i.colorName,
+          };
+        }),
+        name: name.trim(),
+        phone: onlyDigits(phone),
+        cep: onlyDigits(cep),
         cpf: validCpf(cpf) ? formatCpf(cpf) : undefined,
+        city: city || undefined,
+        street: street || undefined,
+        uf: uf || undefined,
       },
-    );
-    if (shop) window.location.assign(shop);
-    return Boolean(shop);
+    }).then((res) => {
+      if (res.ok && res.url) {
+        window.location.assign(res.url);
+        return true;
+      }
+      return false;
+    });
   }
 
   const canPay =
@@ -171,38 +179,35 @@ function Checkout() {
               if (busy) return;
               setPayErr("");
               setBusy(true);
-              if (!mpReady) {
-                if (!shopifyPay()) {
+              void (async () => {
+                if (mpReady) {
+                  try {
+                    const res = await createMercadoPagoPreference({
+                      data: {
+                        name: name.trim(),
+                        cpf,
+                        phone,
+                        cep,
+                        city,
+                        street,
+                        uf,
+                        cart: cart.map((i) => ({ slug: i.slug, size: i.size, qty: i.qty })),
+                      },
+                    });
+                    if (res.ok && res.url) {
+                      window.location.assign(res.url);
+                      return;
+                    }
+                  } catch {
+                    /* cai no PIX da Shopify */
+                  }
+                }
+                const ok = await payShopify();
+                if (!ok) {
                   setPayErr("Não abriu o PIX. Fale com a shopper.");
                   setBusy(false);
                 }
-                return;
-              }
-              void createMercadoPagoPreference({
-                data: {
-                  name: name.trim(),
-                  cpf,
-                  phone,
-                  cep,
-                  city,
-                  street,
-                  uf,
-                  cart: cart.map((i) => ({ slug: i.slug, size: i.size, qty: i.qty })),
-                },
-              })
-                .then((res) => {
-                  if (res.ok && res.url) {
-                    window.location.assign(res.url);
-                    return;
-                  }
-                  if (shopifyPay()) return;
-                  setPayErr("Não abriu o PIX. Fale com a shopper.");
-                  setBusy(false);
-                })
-                .catch(() => {
-                  setPayErr("Não abriu o PIX. Tente de novo ou fale com a shopper.");
-                  setBusy(false);
-                });
+              })();
             }}
           >
             <label className="block">
@@ -279,10 +284,12 @@ function Checkout() {
                   if (busy || !canPay) return;
                   setPayErr("");
                   setBusy(true);
-                  if (!shopifyPay()) {
-                    setPayErr("Apple Pay não abriu. Use PIX ou a shopper.");
-                    setBusy(false);
-                  }
+                  void payShopify().then((ok) => {
+                    if (!ok) {
+                      setPayErr("Apple Pay não abriu. Use PIX ou a shopper.");
+                      setBusy(false);
+                    }
+                  });
                 }}
                 className="flex h-12 w-full items-center justify-center border border-ink text-[11px] tracking-[0.2em] uppercase disabled:opacity-30"
               >
