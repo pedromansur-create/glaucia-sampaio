@@ -57,9 +57,9 @@ function Checkout() {
           )}
         </ul>
       )}
-      {welcomeApplied && totals.discount > 0 && (
+      {totals.discount > 0 && (
         <p className="mt-6 text-[11px] tracking-[0.12em] text-muted uppercase">
-          {WELCOME_CODE} 10% aplicado
+          {totals.code === "FLASH25" ? "25% até meia-noite" : `${WELCOME_CODE} 10% aplicado`}
         </p>
       )}
       <div className="mt-6 space-y-1 text-sm">

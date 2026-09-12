@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { FREE_SHIPPING_FROM, WELCOME_CODE, WELCOME_RATE, getProduct } from "./catalog";
+import { FLASH_CODE, FLASH_RATE, flashActive } from "./flash";
 import { DEFAULT_SHOPIFY_STORE } from "./shopify";
 
 export type CartItem = {
@@ -136,9 +137,14 @@ export function cartTotals(cart: CartItem[], welcomeApplied: boolean) {
     return { item, product: p, unit, sale, line: unit * item.qty };
   });
   const subtotal = lines.reduce((a, l) => a + l.line, 0);
+  const flash = flashActive();
   const eligible = lines.filter((l) => !l.sale).reduce((a, l) => a + l.line, 0);
-  const discount = welcomeApplied ? Math.round(eligible * WELCOME_RATE * 100) / 100 : 0;
+  const discount = flash
+    ? Math.round(subtotal * FLASH_RATE * 100) / 100
+    : welcomeApplied
+      ? Math.round(eligible * WELCOME_RATE * 100) / 100
+      : 0;
   const shipping = subtotal - discount >= FREE_SHIPPING_FROM || subtotal === 0 ? 0 : 45;
   const total = Math.max(0, subtotal - discount + shipping);
-  return { lines, subtotal, discount, shipping, total, code: welcomeApplied ? WELCOME_CODE : null };
+  return { lines, subtotal, discount, shipping, total, code: flash ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : null };
 }

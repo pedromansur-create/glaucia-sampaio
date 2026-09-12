@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
 import { shopifyCartUrl, shopifyReadyCount } from "@/lib/shopify";
 import { WELCOME_CODE } from "@/lib/catalog";
+import { FLASH_CODE, flashActive } from "@/lib/flash";
 import { useShop } from "@/lib/store";
 
 export function IosTabBar() {
@@ -120,7 +121,7 @@ export function ShopifyPayButton({ className }: { className?: string }) {
   const store = useShop((s) => s.shopifyStore);
   const welcomeApplied = useShop((s) => s.welcomeApplied);
   const ready = shopifyReadyCount(cart);
-  const url = shopifyCartUrl(store, cart, welcomeApplied ? WELCOME_CODE : null);
+  const url = shopifyCartUrl(store, cart, flashActive() ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : null);
   if (!url || ready === 0) return null;
   return (
     <a

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { getProduct, whatsappUrl, FREE_SHIPPING_FROM, subscribeCatalog, catalogStamp } from "@/lib/catalog";
 import { jsonLdScript, pageHead, productJsonLd } from "@/lib/seo";
 import { formatBRL } from "@/lib/format";
+import { flashActive, salePrice } from "@/lib/flash";
 import {
   isSizeAvailable,
   matchShopifyVariant,
@@ -307,7 +308,16 @@ function ProductPage() {
             {p.shortName} ?
           </button>
           <span className="shrink-0 text-[18px] tracking-[0.04em] tabular-nums">
-            {formatBRL(matched?.price ?? p.price)}
+            {flashActive() ? (
+              <>
+                <span className="mr-2 text-[13px] text-subtle line-through">
+                  {formatBRL(matched?.price ?? p.price)}
+                </span>
+                {formatBRL(salePrice(matched?.price ?? p.price))}
+              </>
+            ) : (
+              formatBRL(matched?.price ?? p.price)
+            )}
           </span>
         </div>
         {info ? (

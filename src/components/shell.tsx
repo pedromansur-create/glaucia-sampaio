@@ -10,6 +10,7 @@ import {
 } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { formatBRL } from "@/lib/format";
+import { FLASH_CODE, flashActive, salePrice } from "@/lib/flash";
 import { ShopifyPayButton } from "@/components/ios";
 import { IosInstallSheet } from "@/components/ios";
 import { cartTotals, itemKey, useShop } from "@/lib/store";
@@ -56,9 +57,18 @@ function Header() {
   const setSearchOpen = useShop((s) => s.setSearchOpen);
   const cycleZoom = useShop((s) => s.cycleZoom);
   const count = cart.reduce((a, i) => a + i.qty, 0);
+  const [flash, setFlash] = useState(flashActive);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setFlash(flashActive()), 20000);
+    return () => window.clearInterval(id);
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 bg-bg pt-[max(0.35rem,env(safe-area-inset-top))]">
+      {flash ? (
+        <p className="pb-0.5 text-center text-[10px] tracking-[0.22em] text-muted uppercase">25% até meia-noite</p>
+      ) : null}
       <div className="grid grid-cols-[auto_1fr_auto] items-center px-2">
         <button
           type="button"
@@ -195,7 +205,16 @@ function CartDrawer() {
                           ))}
                         </select>
                       </label>
-                      <p className="mt-1 text-sm tabular-nums">{formatBRL(unit)}</p>
+                      <p className="mt-1 text-sm tabular-nums">
+                        {flashActive() ? (
+                          <>
+                            <span className="mr-2 text-subtle line-through">{formatBRL(unit)}</span>
+                            {formatBRL(salePrice(unit))}
+                          </>
+                        ) : (
+                          formatBRL(unit)
+                        )}
+                      </p>
                       <div className="mt-2 flex items-center gap-3 text-sm">
                         <button type="button" onClick={() => setQty(itemKey(item), item.qty - 1)}>
                           −
@@ -220,12 +239,15 @@ function CartDrawer() {
           )}
         </div>
         <div className="border-t border-line px-6 py-5">
-          {welcomeApplied && totals.discount > 0 && (
+          {totals.code === FLASH_CODE && totals.discount > 0 && (
+            <p className="mb-3 text-[11px] tracking-[0.12em] text-muted uppercase">25% até meia-noite</p>
+          )}
+          {welcomeApplied && totals.discount > 0 && totals.code !== FLASH_CODE && (
             <p className="mb-3 text-[11px] tracking-[0.12em] text-muted uppercase">
               10% primeira compra aplicado
             </p>
           )}
-          {!welcomeApplied && !welcomeUsed && (
+          {!flashActive() && !welcomeApplied && !welcomeUsed && (
             <form
               className="mb-4 flex gap-2"
               onSubmit={(e) => {
@@ -250,7 +272,7 @@ function CartDrawer() {
           {err && <p className="mb-2 text-xs text-coral">{err}</p>}
           <div className="space-y-1 text-sm">
             <Row k="Subtotal" v={formatBRL(totals.subtotal)} />
-            {totals.discount > 0 && <Row k={`Cupom ${WELCOME_CODE}`} v={`− ${formatBRL(totals.discount)}`} />}
+            {totals.discount > 0 && <Row k={`Cupom ${totals.code}`} v={`− ${formatBRL(totals.discount)}`} />}
             <Row
               k="Frete"
               v={totals.shipping === 0 ? "Grátis" : formatBRL(totals.shipping)}
