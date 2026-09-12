@@ -271,7 +271,7 @@ function Checkout() {
               disabled={busy || !canPay}
               className="mt-6 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.2em] text-paper uppercase disabled:opacity-30"
             >
-              {busy ? "…" : "Pagar · PIX Mercado Pago"}
+              {busy ? "…" : "Pagar · PIX ou cartão"}
             </button>
           </form>
 
@@ -284,7 +284,7 @@ function Checkout() {
             Fechar no WhatsApp
           </a>
           <p className="mt-8 text-center text-[10px] leading-relaxed text-muted">
-            PIX Canário Amarelo. Ou shopper no WhatsApp. CPF na nota. Sem criar conta. 10x. 7 dias. {BOUTIQUE.cnpj}
+            PIX ou cartão em até 10x. Conta Canário Amarelo. CPF na nota. Sem criar conta. 7 dias. {BOUTIQUE.cnpj}
           </p>
         </>
       )}

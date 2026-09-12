@@ -82,7 +82,10 @@ export default defineEventHandler(async (event) => {
         street_number: String(data.number || ""),
       },
     },
-    payment_methods: { installments: 10 },
+    payment_methods: {
+      installments: 10,
+      default_installments: 1,
+    },
     statement_descriptor: "GLAUCIA SAMPAIO",
     back_urls: {
       success: `${SITE}/pedido?status=ok`,
