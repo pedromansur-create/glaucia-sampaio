@@ -4,7 +4,7 @@ import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, whatsappUrl } from "@/lib/cat
 import { FLASH_CODE, flashActive } from "@/lib/flash";
 import { WELCOME_CODE } from "@/lib/catalog";
 import { formatBRL } from "@/lib/format";
-import { shopifyCartUrl, shopifyReadyCount } from "@/lib/shopify";
+import { createMercadoPagoPreference } from "@/lib/mercadopago.functions";
 import { cartTotals, useShop } from "@/lib/store";
 import { pageHead } from "@/lib/seo";
 
@@ -46,7 +46,6 @@ function validCpf(s: string) {
 function Checkout() {
   const navigate = useNavigate();
   const cart = useShop((s) => s.cart);
-  const store = useShop((s) => s.shopifyStore);
   const welcomeApplied = useShop((s) => s.welcomeApplied);
   const totals = useMemo(() => cartTotals(cart, welcomeApplied), [cart, welcomeApplied]);
   const [name, setName] = useState("");
@@ -57,25 +56,8 @@ function Checkout() {
   const [street, setStreet] = useState("");
   const [uf, setUf] = useState("");
   const [cepErr, setCepErr] = useState("");
-
-  const ready = shopifyReadyCount(cart);
-  const payUrl =
-    ready > 0
-      ? shopifyCartUrl(
-          store,
-          cart,
-          flashActive() ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : null,
-          {
-            firstName: name.trim() || undefined,
-            phone: onlyDigits(phone) || undefined,
-            zip: onlyDigits(cep) || undefined,
-            address1: street || undefined,
-            city: city || undefined,
-            province: uf || undefined,
-            cpf: validCpf(cpf) ? formatCpf(cpf) : undefined,
-          },
-        )
-      : null;
+  const [busy, setBusy] = useState(false);
+  const [payErr, setPayErr] = useState("");
 
   const orderText = cart
     .map((i) => {
@@ -155,7 +137,37 @@ function Checkout() {
             className="mt-10 space-y-5"
             onSubmit={(e) => {
               e.preventDefault();
-              if (payUrl) window.location.assign(payUrl);
+              if (busy) return;
+              setPayErr("");
+              setBusy(true);
+              void createMercadoPagoPreference({
+                data: {
+                  name: name.trim(),
+                  cpf,
+                  phone,
+                  cep,
+                  city,
+                  street,
+                  uf,
+                  cart: cart.map((i) => ({ slug: i.slug, size: i.size, qty: i.qty })),
+                },
+              })
+                .then((res) => {
+                  if (res.ok && res.url) {
+                    window.location.assign(res.url);
+                    return;
+                  }
+                  setPayErr(
+                    res.error === "mp-token"
+                      ? "Falta a chave do Mercado Pago na conta."
+                      : "Não abriu o PIX. Tente de novo ou fale com a shopper.",
+                  );
+                  setBusy(false);
+                })
+                .catch(() => {
+                  setPayErr("Não abriu o PIX. Tente de novo ou fale com a shopper.");
+                  setBusy(false);
+                });
             }}
           >
             <label className="block">
@@ -215,10 +227,12 @@ function Checkout() {
             ) : null}
             {cepErr ? <p className="text-[11px] text-muted">{cepErr}</p> : null}
 
+            {payErr ? <p className="text-[11px] text-muted">{payErr}</p> : null}
+
             <button
               type="submit"
               disabled={
-                !payUrl ||
+                busy ||
                 !name.trim() ||
                 !validCpf(cpf) ||
                 onlyDigits(phone).length < 10 ||
@@ -226,7 +240,7 @@ function Checkout() {
               }
               className="mt-4 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.28em] text-paper uppercase disabled:opacity-30"
             >
-              Pagar · PIX
+              {busy ? "…" : "Pagar · PIX"}
             </button>
           </form>
 
