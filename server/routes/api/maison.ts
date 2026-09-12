@@ -1,12 +1,15 @@
 import { defineEventHandler, readBody, setResponseStatus } from "h3";
 
+const KINDS = new Set(["recado", "anuncio", "caixa"]);
+
 export default defineEventHandler(async (event) => {
   if (event.method === "GET") {
     const url = process.env.OLLAMA_URL?.trim();
     if (!url) return { ok: false, local: false };
     try {
       const r = await fetch(`${url.replace(/\/$/, "")}/health`, { signal: AbortSignal.timeout(4000) });
-      return { ok: r.ok, local: true };
+      const json = (await r.json().catch(() => ({}))) as { nodes?: unknown; exclusive?: string[] };
+      return { ok: r.ok, local: true, exclusive: json.exclusive ?? ["site", "caixarcs"], nodes: json.nodes };
     } catch {
       return { ok: false, local: true, error: "mac offline" };
     }
@@ -21,7 +24,7 @@ export default defineEventHandler(async (event) => {
     return { ok: false, local: false };
   }
   const body = await readBody(event);
-  const kind = body?.kind === "anuncio" ? "anuncio" : "recado";
+  const kind = KINDS.has(body?.kind) ? body.kind : "recado";
   const key = process.env.MAISON_KEY?.trim();
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (key) headers["x-maison-key"] = key;

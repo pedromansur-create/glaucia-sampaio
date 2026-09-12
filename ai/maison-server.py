@@ -1,16 +1,30 @@
 #!/usr/bin/env python3
-"""Local maison brain. Retrieval stays on the website; this only writes copy."""
+"""Cérebro local: só site Gláucia Sampaio + CaixaRCS. Nada de chat pessoal."""
 from __future__ import annotations
 
 import json
 import os
+import threading
 import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-OLLAMA = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/")
+PORT = int(os.environ.get("PORT", "8787"))
 MODEL = os.environ.get("MAISON_MODEL", "gs-maison")
 KEY = os.environ.get("MAISON_KEY", "").strip()
+URLS = [
+    u.strip().rstrip("/")
+    for u in os.environ.get("OLLAMA_URLS", os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")).split(",")
+    if u.strip()
+]
+ORIGINS = {
+    o.strip()
+    for o in os.environ.get(
+        "MAISON_ORIGINS",
+        "https://www.glauciasampaio.com,https://glauciasampaio.com,https://www.caixarcs.com,https://caixarcs.com",
+    ).split(",")
+    if o.strip()
+}
 
 SYSTEM = """Você é a voz da boutique Gláucia Sampaio, Uberlândia.
 Escreve recados de WhatsApp para a Lucy mandar à cliente.
@@ -21,7 +35,8 @@ Regras:
 - Sem “incrível”, “confira”, “desconto imperdível”, emoji, a palavra IA.
 - Comece com Olá e o primeiro nome se houver.
 - No máximo 8 linhas.
-- Feche oferecendo reserva do tamanho ou prova na Rua Rodolfo Correa, 385."""
+- Feche oferecendo reserva do tamanho ou prova na Rua Rodolfo Correa, 385.
+- Este modelo só atende o site e o caixa da loja."""
 
 ADS_SYSTEM = """Você é a voz da boutique Gláucia Sampaio para anúncio.
 Português do Brasil. Luxo quieto. Sem gritaria, sem emoji, sem a palavra IA, sem “imperdível”.
@@ -42,11 +57,23 @@ FACEBOOK
 
 Não escreva mais nada fora desses blocos."""
 
+CAIXA_SYSTEM = """Você é a voz interna do CaixaRCS da Gláucia Sampaio.
+Escreve recado curto para a vendedora no caixa: tamanho, estoque, próxima peça.
+Regras:
+- Português do Brasil, frases curtas.
+- Nunca invente peça, preço, tamanho ou estoque. Use só o JSON.
+- Sem emoji, sem a palavra IA, sem tom de anúncio.
+- No máximo 6 linhas.
+- Se faltar dado, diga o que a vendedora deve perguntar à cliente."""
 
-def ollama_json(path: str, payload: dict | None = None, timeout: int = 60) -> dict:
+_lock = threading.Lock()
+_cursor = 0
+
+
+def ollama_json(base: str, path: str, payload: dict | None = None, timeout: int = 60) -> dict:
     data = None if payload is None else json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
-        f"{OLLAMA}{path}",
+        f"{base}{path}",
         data=data,
         headers={"Content-Type": "application/json"},
         method="GET" if data is None else "POST",
@@ -55,31 +82,52 @@ def ollama_json(path: str, payload: dict | None = None, timeout: int = 60) -> di
         return json.loads(r.read().decode("utf-8"))
 
 
+def backends() -> list[str]:
+    global _cursor
+    with _lock:
+        n = len(URLS)
+        order = URLS[_cursor:] + URLS[:_cursor]
+        _cursor = (_cursor + 1) % n if n else 0
+    return order
+
+
+def ping(base: str) -> dict:
+    try:
+        tags = ollama_json(base, "/api/tags", timeout=4)
+        names = [m.get("name") for m in tags.get("models") or []]
+        return {"ok": True, "url": base, "models": names}
+    except Exception as e:
+        return {"ok": False, "url": base, "error": str(e)[:80]}
+
+
 def chat(system: str, prompt: str) -> str:
-    models = [MODEL]
-    if MODEL != "qwen3.5:9b":
-        models.append("qwen3.5:9b")
-    last = None
-    for name in models:
-        try:
+    last: Exception | None = None
+    for base in backends():
+        models = [MODEL]
+        if MODEL != "qwen3.5:9b":
+            models.append("qwen3.5:9b")
+        for name in models:
             payload = {
-                    "model": name,
-                    "stream": False,
-                    "keep_alive": "24h",
-                    "options": {"temperature": 0.3, "num_ctx": 2048, "num_predict": 280, "top_p": 0.8},
-                    "messages": [
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": prompt},
-                    ],
-                }
+                "model": name,
+                "stream": False,
+                "keep_alive": "24h",
+                "options": {"temperature": 0.3, "num_ctx": 2048, "num_predict": 280, "top_p": 0.8},
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": prompt},
+                ],
+            }
             try:
-                data = ollama_json("/api/chat", {**payload, "think": False}, timeout=90)
-            except Exception:
-                data = ollama_json("/api/chat", payload, timeout=90)
-            return str((data.get("message") or {}).get("content") or "").strip()
-        except Exception as e:
-            last = e
-    raise last or RuntimeError("ollama")
+                try:
+                    data = ollama_json(base, "/api/chat", {**payload, "think": False}, timeout=90)
+                except Exception:
+                    data = ollama_json(base, "/api/chat", payload, timeout=90)
+                text = str((data.get("message") or {}).get("content") or "").strip()
+                if text:
+                    return text
+            except Exception as e:
+                last = e
+    raise last or RuntimeError("cluster offline")
 
 
 def catalog_prompt(body: dict, extra: str) -> str:
@@ -101,13 +149,19 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt: str, *args) -> None:
         print(fmt % args)
 
+    def _cors(self) -> None:
+        origin = self.headers.get("Origin") or ""
+        if origin in ORIGINS:
+            self.send_header("Access-Control-Allow-Origin", origin)
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, x-maison-key")
+        self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+        self.send_header("Vary", "Origin")
+
     def _send(self, code: int, body: dict) -> None:
         raw = json.dumps(body, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, x-maison-key")
-        self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+        self._cors()
         self.send_header("Content-Length", str(len(raw)))
         self.end_headers()
         if code != 204:
@@ -120,12 +174,11 @@ class Handler(BaseHTTPRequestHandler):
         if self.path != "/health":
             self._send(404, {"ok": False})
             return
-        try:
-            tags = ollama_json("/api/tags", timeout=5)
-            names = [m.get("name") for m in tags.get("models") or []]
-            self._send(200, {"ok": True, "model": MODEL, "models": names})
-        except Exception:
-            self._send(503, {"ok": False, "error": "ollama offline"})
+        nodes = [ping(u) for u in URLS]
+        self._send(
+            200 if any(n["ok"] for n in nodes) else 503,
+            {"ok": any(n["ok"] for n in nodes), "model": MODEL, "exclusive": ["site", "caixarcs"], "nodes": nodes},
+        )
 
     def do_POST(self) -> None:
         if KEY and self.headers.get("x-maison-key") != KEY:
@@ -137,14 +190,19 @@ class Handler(BaseHTTPRequestHandler):
         except json.JSONDecodeError:
             self._send(400, {"ok": False, "error": "json"})
             return
+        kind = self.path.strip("/")
         try:
-            if self.path == "/recado":
+            if kind == "recado":
                 draft = chat(SYSTEM, catalog_prompt(body, "Escreva o recado agora."))
                 self._send(200, {"ok": True, "draft": draft, "model": MODEL})
                 return
-            if self.path == "/anuncio":
+            if kind == "anuncio":
                 copy = chat(ADS_SYSTEM, catalog_prompt(body, "Escreva os anúncios agora."))
                 self._send(200, {"ok": True, "draft": copy, "model": MODEL})
+                return
+            if kind == "caixa":
+                draft = chat(CAIXA_SYSTEM, catalog_prompt(body, "Escreva o recado do caixa agora."))
+                self._send(200, {"ok": True, "draft": draft, "model": MODEL})
                 return
         except urllib.error.HTTPError as e:
             self._send(502, {"ok": False, "error": f"ollama {e.code}"})
@@ -161,5 +219,6 @@ class Server(ThreadingHTTPServer):
 
 if __name__ == "__main__":
     httpd = Server(("0.0.0.0", PORT), Handler)
-    print(f"maison {MODEL} → http://0.0.0.0:{PORT}", flush=True)
+    print(f"maison {MODEL} cluster {len(URLS)} → http://0.0.0.0:{PORT}", flush=True)
+    print("exclusivo: site + caixarcs", flush=True)
     httpd.serve_forever()
