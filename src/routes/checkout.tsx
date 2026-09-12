@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, whatsappUrl } from "@/lib/catalog";
 import { FLASH_CODE, flashActive } from "@/lib/flash";
@@ -44,7 +44,6 @@ function validCpf(s: string) {
 }
 
 function Checkout() {
-  const navigate = useNavigate();
   const cart = useShop((s) => s.cart);
   const welcomeApplied = useShop((s) => s.welcomeApplied);
   const totals = useMemo(() => cartTotals(cart, welcomeApplied), [cart, welcomeApplied]);
@@ -87,15 +86,8 @@ function Checkout() {
   }
 
   return (
-    <div className="mx-auto max-w-md px-6 pb-20 pt-10">
-      <button
-        type="button"
-        onClick={() => navigate({ to: "/" })}
-        className="block w-full text-center text-[11px] tracking-[0.42em] uppercase"
-      >
-        Gláucia Sampaio
-      </button>
-      <h1 className="mt-12 text-center text-[11px] tracking-[0.28em] uppercase">Pagar</h1>
+    <div className="mx-auto max-w-md px-6 pb-20 pt-6">
+      <h1 className="text-center text-[11px] tracking-[0.28em] uppercase">Pagar</h1>
 
       {cart.length === 0 ? (
         <p className="mt-10 text-center text-sm text-muted">Sacola vazia.</p>

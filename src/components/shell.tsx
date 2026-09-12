@@ -51,6 +51,16 @@ export function Shell({ children }: { children: ReactNode }) {
   );
 }
 
+export function Wordmark() {
+  return (
+    <Link to="/" className="min-w-0 text-center">
+      <span className="block truncate text-[11px] tracking-[0.42em] uppercase md:text-[13px] md:tracking-[0.48em]">
+        Gláucia Sampaio
+      </span>
+    </Link>
+  );
+}
+
 function Header() {
   const cart = useShop((s) => s.cart);
   const setCartOpen = useShop((s) => s.setCartOpen);
@@ -70,11 +80,7 @@ function Header() {
         >
           ≡ MENU
         </button>
-        <Link to="/" className="min-w-0 text-center">
-          <span className="block truncate text-[11px] tracking-[0.42em] uppercase md:text-[13px] md:tracking-[0.48em]">
-            Gláucia Sampaio
-          </span>
-        </Link>
+        <Wordmark />
         <div className="flex items-center justify-end">
           <button
             type="button"

@@ -25,9 +25,8 @@ function Pedido() {
   }, [status, clearCart]);
   const pending = status === "pix";
   return (
-    <div className="mx-auto max-w-md px-6 py-24 text-center">
-      <p className="text-[11px] tracking-[0.42em] uppercase">Gláucia Sampaio</p>
-      <h1 className="mt-12 text-[11px] tracking-[0.28em] uppercase">
+    <div className="mx-auto max-w-md px-6 py-16 text-center">
+      <h1 className="text-[11px] tracking-[0.28em] uppercase">
         {pending ? "PIX gerado" : "Pedido recebido"}
       </h1>
       <p className="mt-6 text-sm leading-relaxed text-muted">
