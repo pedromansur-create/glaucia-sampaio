@@ -69,6 +69,7 @@ export const createMercadoPagoPreference = createServerFn({ method: "POST" })
         pending: `${SITE}/pedido?status=pix`,
         failure: `${SITE}/checkout?status=falhou`,
       },
+      notification_url: `${SITE}/api/mercadopago`,
       metadata: { cpf, phone, name: data.name, cep: data.cep, city: data.city, uf: data.uf },
       external_reference: `gs-${Date.now()}`,
     };
