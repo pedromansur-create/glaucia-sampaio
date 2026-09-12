@@ -395,7 +395,7 @@ function ProductPage() {
                 : "ADD"}
         </button>
         <p className="mt-1 text-center text-[10px] tracking-[0.12em] text-muted uppercase">
-          {p.preorder ? `Pré-venda ${p.preorder.shipsFrom}` : "2 dias úteis"} · PIX ·{" "}
+          {p.preorder ? `Pré-venda ${p.preorder.shipsFrom}` : "2 dias úteis"} · PIX · 10x ·{" "}
           <Link to="/trocas" className="underline">
             7 dias
           </Link>

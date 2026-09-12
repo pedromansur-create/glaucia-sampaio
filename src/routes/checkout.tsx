@@ -84,7 +84,7 @@ function Checkout() {
       </div>
       <ShopifyPayButton className="mt-8" />
       <p className="mt-6 text-center text-[11px] leading-relaxed text-muted">
-        PIX primeiro. Frete grátis acima de {formatBRL(FREE_SHIPPING_FROM)}. {BOUTIQUE.cnpj}.{" "}
+        PIX primeiro. 10x sem juros. Frete grátis acima de {formatBRL(FREE_SHIPPING_FROM)}. {BOUTIQUE.cnpj}.{" "}
         <Link to="/trocas" className="underline">
           7 dias
         </Link>
