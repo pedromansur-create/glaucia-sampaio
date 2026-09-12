@@ -133,18 +133,19 @@ export function cartTotals(cart: CartItem[], welcomeApplied: boolean) {
   const lines = cart.map((item) => {
     const p = getProduct(item.slug);
     const unit = p?.price ?? 0;
-    const sale = Boolean(p?.compareAt);
+    const sale = Boolean(p?.compareAt && p.compareAt > (p.price ?? 0) * 1.02);
     return { item, product: p, unit, sale, line: unit * item.qty };
   });
   const subtotal = lines.reduce((a, l) => a + l.line, 0);
   const flash = flashActive();
   const eligible = lines.filter((l) => !l.sale).reduce((a, l) => a + l.line, 0);
   const discount = flash
-    ? Math.round(subtotal * FLASH_RATE * 100) / 100
+    ? Math.round(eligible * FLASH_RATE * 100) / 100
     : welcomeApplied
       ? Math.round(eligible * WELCOME_RATE * 100) / 100
       : 0;
   const shipping = subtotal - discount >= FREE_SHIPPING_FROM || subtotal === 0 ? 0 : 45;
   const total = Math.max(0, subtotal - discount + shipping);
-  return { lines, subtotal, discount, shipping, total, code: flash ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : null };
+  const code = flash && discount > 0 ? FLASH_CODE : !flash && welcomeApplied ? WELCOME_CODE : null;
+  return { lines, subtotal, discount, shipping, total, code };
 }

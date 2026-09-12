@@ -10,7 +10,7 @@ import {
 } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { formatBRL } from "@/lib/format";
-import { FLASH_CODE, flashActive, salePrice } from "@/lib/flash";
+import { FLASH_CODE, displayPrices, flashActive } from "@/lib/flash";
 import { ShopifyPayButton } from "@/components/ios";
 import { IosInstallSheet } from "@/components/ios";
 import { cartTotals, itemKey, useShop } from "@/lib/store";
@@ -197,14 +197,17 @@ function CartDrawer() {
                         </select>
                       </label>
                       <p className="mt-1 text-sm tabular-nums">
-                        {flashActive() ? (
-                          <>
-                            <span className="mr-2 text-subtle line-through">{formatBRL(unit)}</span>
-                            {formatBRL(salePrice(unit))}
-                          </>
-                        ) : (
-                          formatBRL(unit)
-                        )}
+                        {(() => {
+                          const shown = displayPrices(unit, product.compareAt);
+                          return shown.was ? (
+                            <>
+                              <span className="mr-2 text-subtle line-through">{formatBRL(shown.was)}</span>
+                              {formatBRL(shown.now)}
+                            </>
+                          ) : (
+                            formatBRL(shown.now)
+                          );
+                        })()}
                       </p>
                       <div className="mt-2 flex items-center gap-3 text-sm">
                         <button type="button" onClick={() => setQty(itemKey(item), item.qty - 1)}>
