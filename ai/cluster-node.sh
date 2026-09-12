@@ -25,10 +25,11 @@ else
   echo "Sigo com o cérebro neste Mini; o cabo entra depois."
 fi
 
-if ! command -v ollama >/dev/null 2>&1; then
+if ! command -v ollama >/dev/null 2>&1 && [ ! -x /usr/local/bin/ollama ]; then
   echo "Instalando Ollama…"
-  curl -fsSL https://ollama.com/install.sh | sh
+  curl -fsSL https://ollama.com/install.sh | sh || true
 fi
+export PATH="/usr/local/bin:/Applications/Ollama.app/Contents/Resources:$PATH"
 
 launchctl setenv OLLAMA_HOST "0.0.0.0:11434"
 launchctl setenv OLLAMA_FLASH_ATTENTION "1"
@@ -37,8 +38,8 @@ launchctl setenv OLLAMA_KEEP_ALIVE "24h"
 launchctl setenv OLLAMA_NUM_PARALLEL "1"
 launchctl setenv OLLAMA_MAX_LOADED_MODELS "1"
 killall Ollama 2>/dev/null || true
-open -a Ollama 2>/dev/null || true
-sleep 3
+open /Applications/Ollama.app 2>/dev/null || open -a Ollama 2>/dev/null || true
+sleep 4
 ollama pull qwen3.5:9b
 ollama create gs-maison -f "$(pwd)/Modelfile"
 
