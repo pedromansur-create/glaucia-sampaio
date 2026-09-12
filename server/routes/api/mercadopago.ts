@@ -48,6 +48,12 @@ export default defineEventHandler(async (event) => {
           process.env.MP_ACCESS_TOKEN?.trim() ||
           process.env.MERCADO_PAGO_TOKEN?.trim(),
       ),
+      keys: {
+        MERCADO_PAGO_ACCESS_TOKEN: Boolean(process.env.MERCADO_PAGO_ACCESS_TOKEN?.trim()),
+        MERCADOPAGO_ACCESS_TOKEN: Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN?.trim()),
+        MP_ACCESS_TOKEN: Boolean(process.env.MP_ACCESS_TOKEN?.trim()),
+        MERCADO_PAGO_TOKEN: Boolean(process.env.MERCADO_PAGO_TOKEN?.trim()),
+      },
       secret: Boolean(process.env.MERCADO_PAGO_WEBHOOK_SECRET?.trim()),
     };
   }
