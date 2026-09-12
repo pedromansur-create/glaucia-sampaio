@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, whatsappUrl } from "@/lib/catalog";
 import { FLASH_CODE, flashActive } from "@/lib/flash";
 import { WELCOME_CODE } from "@/lib/catalog";
@@ -59,6 +59,12 @@ function Checkout() {
   const [cepErr, setCepErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [payErr, setPayErr] = useState("");
+  const [applePay, setApplePay] = useState(false);
+
+  useEffect(() => {
+    const Apple = (window as Window & { ApplePaySession?: { canMakePayments?: () => boolean } }).ApplePaySession;
+    setApplePay(Boolean(Apple && (Apple.canMakePayments ? Apple.canMakePayments() : true)));
+  }, []);
 
   const orderText = cart
     .map((i) => {
@@ -86,6 +92,28 @@ function Checkout() {
       setCepErr("Não deu pra ler o CEP");
     }
   }
+
+  function shopifyPay() {
+    const shop = shopifyCartUrl(
+      store,
+      cart,
+      flashActive() ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : null,
+      {
+        firstName: name.trim() || undefined,
+        phone: onlyDigits(phone) || undefined,
+        zip: onlyDigits(cep) || undefined,
+        address1: street || undefined,
+        city: city || undefined,
+        province: uf || undefined,
+        cpf: validCpf(cpf) ? formatCpf(cpf) : undefined,
+      },
+    );
+    if (shop) window.location.assign(shop);
+    return Boolean(shop);
+  }
+
+  const canPay =
+    Boolean(name.trim()) && validCpf(cpf) && onlyDigits(phone).length >= 10 && onlyDigits(cep).length === 8;
 
   return (
     <div className="mx-auto max-w-md px-6 pb-20 pt-8">
@@ -151,24 +179,7 @@ function Checkout() {
                     window.location.assign(res.url);
                     return;
                   }
-                  const shop = shopifyCartUrl(
-                    store,
-                    cart,
-                    flashActive() ? FLASH_CODE : welcomeApplied ? WELCOME_CODE : null,
-                    {
-                      firstName: name.trim() || undefined,
-                      phone: onlyDigits(phone) || undefined,
-                      zip: onlyDigits(cep) || undefined,
-                      address1: street || undefined,
-                      city: city || undefined,
-                      province: uf || undefined,
-                      cpf: validCpf(cpf) ? formatCpf(cpf) : undefined,
-                    },
-                  );
-                  if (shop) {
-                    window.location.assign(shop);
-                    return;
-                  }
+                  if (shopifyPay()) return;
                   setPayErr("Não abriu o PIX. Fale com a shopper.");
                   setBusy(false);
                 })
@@ -239,17 +250,29 @@ function Checkout() {
 
             <button
               type="submit"
-              disabled={
-                busy ||
-                !name.trim() ||
-                !validCpf(cpf) ||
-                onlyDigits(phone).length < 10 ||
-                onlyDigits(cep).length !== 8
-              }
+              disabled={busy || !canPay}
               className="mt-6 flex h-12 w-full items-center justify-center bg-ink text-[11px] tracking-[0.2em] text-paper uppercase disabled:opacity-30"
             >
               {busy ? "…" : "Pagar · PIX"}
             </button>
+            {applePay ? (
+              <button
+                type="button"
+                disabled={busy || !canPay}
+                onClick={() => {
+                  if (busy || !canPay) return;
+                  setPayErr("");
+                  setBusy(true);
+                  if (!shopifyPay()) {
+                    setPayErr("Apple Pay não abriu. Use PIX ou a shopper.");
+                    setBusy(false);
+                  }
+                }}
+                className="flex h-12 w-full items-center justify-center border border-ink text-[11px] tracking-[0.2em] uppercase disabled:opacity-30"
+              >
+                Apple Pay
+              </button>
+            ) : null}
           </form>
 
           <a
