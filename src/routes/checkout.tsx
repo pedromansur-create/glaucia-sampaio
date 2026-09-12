@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { BOUTIQUE, FREE_SHIPPING_FROM, getProduct, whatsappUrl, subscribeCatalog, catalogStamp } from "@/lib/catalog";
-import { FLASH_CODE } from "@/lib/flash";
+import { FLASH_CODE, salePrice } from "@/lib/flash";
 import { WELCOME_CODE } from "@/lib/catalog";
 import { formatBRL } from "@/lib/format";
 import { cartTotals, useShop } from "@/lib/store";
@@ -131,7 +131,7 @@ function Checkout() {
 
           {totals.discount > 0 && (
             <p className="mt-6 text-[11px] tracking-[0.12em] text-muted uppercase">
-              {totals.code === FLASH_CODE ? "25% até meia-noite" : `${WELCOME_CODE} 10%`}
+              {totals.code === FLASH_CODE ? "25% automático" : `${WELCOME_CODE} 10%`}
             </p>
           )}
           <div className="mt-4 space-y-1 text-sm">
@@ -169,7 +169,11 @@ function Checkout() {
                   size: item.size,
                   qty: item.qty,
                   title: product ? `${product.brand} ${product.shortName} ${item.size}` : item.slug,
-                  price: item.qty ? Number((line / item.qty).toFixed(2)) : 0,
+                  price: product
+                    ? salePrice(product.price, product.compareAt)
+                    : item.qty
+                      ? Number((line / item.qty).toFixed(2))
+                      : 0,
                 })),
               )}
             />

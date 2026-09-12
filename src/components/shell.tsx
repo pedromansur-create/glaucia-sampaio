@@ -246,7 +246,7 @@ function CartDrawer() {
         </div>
         <div className="border-t border-line px-6 py-5">
           {totals.code === FLASH_CODE && totals.discount > 0 && (
-            <p className="mb-3 text-[11px] tracking-[0.12em] text-muted uppercase">25% até meia-noite</p>
+            <p className="mb-3 text-[11px] tracking-[0.12em] text-muted uppercase">25% automático</p>
           )}
           {welcomeApplied && totals.discount > 0 && totals.code !== FLASH_CODE && (
             <p className="mb-3 text-[11px] tracking-[0.12em] text-muted uppercase">

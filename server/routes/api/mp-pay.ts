@@ -3,6 +3,8 @@ import { defineEventHandler, getHeader, readBody, readFormData, sendRedirect, se
 const SITE = "https://www.glauciasampaio.com";
 const FREE_SHIPPING_FROM = 1000;
 const SHOP = "https://glaucia-sampaio-3.myshopify.com";
+const FLASH_ENDS = Date.parse("2026-09-15T00:00:00-03:00");
+const FLASH_RATE = 0.25;
 
 function mpToken() {
   const env = process.env as Record<string, string | undefined>;
@@ -103,7 +105,10 @@ export default defineEventHandler(async (event) => {
   let subtotal = 0;
   for (const line of data.cart || []) {
     let unit = Number(line.price || 0);
-    if (!unit && line.slug) unit = await shopifyPrice(line.slug);
+    if (!unit && line.slug) {
+      unit = await shopifyPrice(line.slug);
+      if (unit && Date.now() < FLASH_ENDS) unit = Math.round(unit * (1 - FLASH_RATE) * 100) / 100;
+    }
     if (!unit) continue;
     const qty = Math.max(1, Number(line.qty || 1));
     subtotal += unit * qty;
