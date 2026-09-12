@@ -23,8 +23,8 @@ export default defineEventHandler(async (event) => {
     setResponseStatus(event, 204);
     return { ok: false, local: false };
   }
-  const body = await readBody(event);
-  const kind = KINDS.has(body?.kind) ? body.kind : "recado";
+  const body = ((await readBody(event)) ?? {}) as { kind?: string };
+  const kind = KINDS.has(body.kind ?? "") ? body.kind : "recado";
   const key = process.env.MAISON_KEY?.trim();
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (key) headers["x-maison-key"] = key;
